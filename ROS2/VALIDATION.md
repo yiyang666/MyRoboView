@@ -33,11 +33,13 @@ Jazzy 编译时 `get_typesupport_handle` 有弃用提醒：该调用为兼容 Hu
 
 ## 远程 CI
 
-已配置 `.github/workflows/ros2.yml`，在 Humble/Jammy 和 Jazzy/Noble 官方 ROS 容器中构建并执行 C++/DDS 测试。实际运行结果以 GitHub Actions 为准；本文件在首个提交时尚未把未完成的 CI 记作通过。
+`.github/workflows/ros2.yml` 在 Humble/Jammy 和 Jazzy/Noble 官方 ROS 容器（x86_64）中构建并执行 C++/DDS 测试，**两组均通过**。
+
+运行记录：[GitHub Actions #34589471452](https://github.com/yiyang666/MyRoboView/actions/runs/34589471452)，验证代码提交 `5bccb11`。后续仅补充本验证记录和开发约定，未修改运行代码。CI 的 Humble x86_64 结果不等于 Orin NX arm64 实机验收。
 
 ## 尚未验证 / 不在本轮验收内
 
-- Orin NX arm64、本机 Humble 环境、板端真实机器人 app 与网络条件。
+- Orin NX arm64、板端真实机器人 app 与网络条件；Humble 当前仅在 x86_64 CI 容器验证。
 - 8/24 小时长稳、负载容量、CPU/RSS 指标与时延目标。
 - 所有可能 ROS 类型的穷举测试；当前是通用反射实现和典型标准/自定义类型验证。
 - ROS2 QoS 不兼容诊断 UI、配置字段存在性、配置热加载与复杂 profile。
