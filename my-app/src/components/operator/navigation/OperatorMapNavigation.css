@@ -1,0 +1,140 @@
+.operator-map-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #0f0f1e;
+}
+
+/* 导航页顶栏压矮，把纵向空间留给地图（不影响中台/遥控） */
+.operator-map-nav .operator-app__header {
+  padding: 2px 6px;
+  gap: 4px;
+}
+
+.operator-map-nav .operator-app__header-start {
+  gap: 4px;
+  align-items: center;
+}
+
+.operator-map-nav .operator-app__back {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.operator-map-nav .operator-app__title {
+  display: none;
+}
+
+.operator-map-nav .operator-app__meta {
+  gap: 1px 6px;
+  font-size: 10px;
+  padding-top: 0;
+  line-height: 1.2;
+}
+
+.operator-map-nav .operator-app__chip {
+  gap: 2px;
+}
+
+.operator-map-nav .operator-app__logout {
+  margin-top: 0;
+  min-height: 28px;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+.operator-map-nav__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 手机导航：地图贴边，缩放控件才能真正贴右下 */
+.operator-map-nav .map-nav-canvas-wrap {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.operator-map-nav .map-nav-status-bar {
+  top: 4px;
+  right: 4px;
+  min-width: 0;
+  max-width: min(160px, 40vw);
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.operator-map-nav .map-nav-status-item {
+  padding: 2px 0;
+  gap: 4px;
+}
+
+.operator-map-nav .map-nav-status-item .label,
+.operator-map-nav .map-nav-status-item .value {
+  font-size: 11px;
+}
+
+/* 缩放卡片：缩小并贴地图右下角 */
+.operator-map-nav .map-nav-zoom-controls {
+  right: 4px;
+  bottom: 4px;
+  gap: 2px;
+  padding: 3px 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.operator-map-nav .map-nav-zoom-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  font-size: 15px;
+}
+
+.operator-map-nav .map-nav-zoom-btn.map-nav-zoom-reset {
+  font-size: 12px;
+}
+
+.operator-map-nav .map-nav-zoom-label {
+  min-width: 28px;
+  padding: 0 2px;
+  font-size: 11px;
+}
+
+.operator-bottom-bar {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.operator-bottom-bar__btn {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.operator-bottom-bar__btn.is-active {
+  border-color: rgba(96, 165, 250, 0.55);
+  background: rgba(37, 99, 235, 0.25);
+  color: #dbeafe;
+}
+
+.operator-bottom-bar__btn:disabled {
+  opacity: 0.4;
+}

@@ -1,0 +1,20 @@
+{
+  "jwt_secret": "roboview_development_only_replace_min32chars_ok",
+  "users": [
+    {
+      "username": "admin",
+      "role": "admin",
+      "password_pbkdf2": "pbkdf2-sha256$100000$2950eea8c99810d8e5e1445ac467775a$940a43d9a954c9b9e7828750e7c70af2834a4c0ba9b064ea05718e729dc6b736"
+    },
+    {
+      "username": "developer",
+      "role": "developer",
+      "password_pbkdf2": "pbkdf2-sha256$100000$26938d437464e1c3fb0e49c0fc73f6e8$f269edfcabe594b2097c7eeaf2be8e266dcad19b8d830c90a2ae300203549991"
+    },
+    {
+      "username": "operator",
+      "role": "user",
+      "password_pbkdf2": "pbkdf2-sha256$100000$74166fa748a6af5480fe5eab7dff69b3$2f3f312aed2b6c720e5a48f8b261d362d555b102d83e4e35cf8569ec749b1905"
+    }
+  ]
+}

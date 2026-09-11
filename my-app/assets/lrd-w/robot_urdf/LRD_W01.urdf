@@ -1,0 +1,387 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="LRD-W01_URDF">
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/base_link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <link name="FL_hip_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FL_hip_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.63529 1 0.96863 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FL_hip_joint" type="revolute">
+    <origin xyz="0.3062 0.0685 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="FL_hip_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.43633" upper="0.61087" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FL_thigh_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FL_thigh_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FL_thigh_joint" type="revolute">
+    <origin xyz="0.046 0.0405 0" rpy="0 0 0" />
+    <parent link="FL_hip_Link" />
+    <child link="FL_thigh_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.618" upper="2.618" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FL_calf_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FL_calf_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FL_calf_joint" type="revolute">
+    <origin xyz="0 0.0525 -0.25" rpy="0 0 0" />
+    <parent link="FL_thigh_Link" />
+    <child link="FL_calf_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.7576" upper="2.7576" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FL_wheel_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FL_wheel_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FL_wheel_joint" type="continuous">
+    <origin xyz="0 0.0525 -0.25" rpy="0 0 0" />
+    <parent link="FL_calf_Link" />
+    <child link="FL_wheel_Link" />
+    <axis xyz="0 1 0" />
+    <limit effort="25" velocity="25.656" />
+  </joint>
+  <link name="FR_hip_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FR_hip_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.63529 1 0.96863 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FR_hip_joint" type="revolute">
+    <origin xyz="0.3062 -0.0685 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="FR_hip_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.61087" upper="0.43633" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FR_thigh_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FR_thigh_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FR_thigh_joint" type="revolute">
+    <origin xyz="0.046 -0.0405 0" rpy="0 0 0" />
+    <parent link="FR_hip_Link" />
+    <child link="FR_thigh_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.618" upper="2.618" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FR_calf_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FR_calf_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FR_calf_joint" type="revolute">
+    <origin xyz="0 -0.0525 -0.25" rpy="0 0 0" />
+    <parent link="FR_thigh_Link" />
+    <child link="FR_calf_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.7576" upper="2.7576" effort="140" velocity="20.944" />
+  </joint>
+  <link name="FR_wheel_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/FR_wheel_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="FR_wheel_joint" type="continuous">
+    <origin xyz="0 -0.0525 -0.25" rpy="0 0 0" />
+    <parent link="FR_calf_Link" />
+    <child link="FR_wheel_Link" />
+    <axis xyz="0 1 0" />
+    <limit effort="25" velocity="25.656" />
+  </joint>
+  <link name="RL_hip_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RL_hip_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.63529 1 0.96863 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RL_hip_joint" type="revolute">
+    <origin xyz="-0.3062 0.0685 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="RL_hip_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.43633" upper="0.61087" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RL_thigh_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RL_thigh_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RL_thigh_joint" type="revolute">
+    <origin xyz="-0.046 0.0405 0" rpy="0 0 0" />
+    <parent link="RL_hip_Link" />
+    <child link="RL_thigh_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.618" upper="2.618" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RL_calf_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RL_calf_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RL_calf_joint" type="revolute">
+    <origin xyz="0 0.0525 -0.25" rpy="0 0 0" />
+    <parent link="RL_thigh_Link" />
+    <child link="RL_calf_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.7576" upper="2.7576" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RL_wheel_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RL_wheel_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RL_wheel_joint" type="continuous">
+    <origin xyz="0 0.0525 -0.25" rpy="0 0 0" />
+    <parent link="RL_calf_Link" />
+    <child link="RL_wheel_Link" />
+    <axis xyz="0 1 0" />
+    <limit effort="25" velocity="25.656" />
+  </joint>
+  <link name="RR_hip_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RR_hip_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.63529 1 0.96863 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RR_hip_joint" type="revolute">
+    <origin xyz="-0.3062 -0.0685 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="RR_hip_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.61087" upper="0.43633" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RR_thigh_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RR_thigh_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RR_thigh_joint" type="revolute">
+    <origin xyz="-0.046 -0.0405 0" rpy="0 0 0" />
+    <parent link="RR_hip_Link" />
+    <child link="RR_thigh_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.618" upper="2.618" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RR_calf_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RR_calf_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RR_calf_joint" type="revolute">
+    <origin xyz="0 -0.0525 -0.25" rpy="0 0 0" />
+    <parent link="RR_thigh_Link" />
+    <child link="RR_calf_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.7576" upper="2.7576" effort="140" velocity="20.944" />
+  </joint>
+  <link name="RR_wheel_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/RR_wheel_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="RR_wheel_joint" type="continuous">
+    <origin xyz="0 -0.0525 -0.25" rpy="0 0 0" />
+    <parent link="RR_calf_Link" />
+    <child link="RR_wheel_Link" />
+    <axis xyz="0 1 0" />
+    <limit effort="25" velocity="25.656" />
+  </joint>
+  <link name="IMU_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/IMU_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="IMU_joint" type="fixed">
+    <origin xyz="-0.0033627 0.067993 -0.045597" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="IMU_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="F_Camera_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/F_Camera_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.67059 0.56863 1 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="F_Camera_joint" type="fixed">
+    <origin xyz="0.43225 0 0.034976" rpy="2.9995 1.5708 2.9995" />
+    <parent link="base_link" />
+    <child link="F_Camera_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="F_Lidar_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/F_Lidar_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="F_Lidar_joint" type="fixed">
+    <origin xyz="0.3942 0 -0.04745" rpy="3.1416 -0.58582 0" />
+    <parent link="base_link" />
+    <child link="F_Lidar_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="R_Camera_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/R_Camera_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.67059 0.56863 1 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="R_Camera_joint" type="fixed">
+    <origin xyz="-0.43225 0 0.034976" rpy="2.9995 1.5708 -0.14207" />
+    <parent link="base_link" />
+    <child link="R_Camera_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="R_Lidar_Link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lrd-w/meshes/R_Lidar_Link.glb" />
+      </geometry>
+      <material name="">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="R_Lidar_joint" type="fixed">
+    <origin xyz="-0.3942 0 -0.04745" rpy="-3.1416 -0.58582 3.1416" />
+    <parent link="base_link" />
+    <child link="R_Lidar_Link" />
+    <axis xyz="0 0 0" />
+  </joint>
+</robot>
