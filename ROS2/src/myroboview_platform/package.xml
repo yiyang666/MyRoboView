@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>myroboview_platform</name>
+  <version>0.1.0</version>
+  <description>C++ configurable read-only ROS2 monitor and mock publisher.</description>
+  <maintainer email="yiyang666@users.noreply.github.com">yiyang666</maintainer>
+  <license>Proprietary</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>rosidl_typesupport_introspection_cpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>myroboview_interfaces</depend>
+  <depend>boost</depend>
+  <depend>jsoncpp</depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>
