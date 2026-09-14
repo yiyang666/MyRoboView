@@ -1,0 +1,75 @@
+{
+  "map": {
+    "id": "demo_testMap_01",
+    "name": "demo_testMap_01",
+    "source": "demo",
+    "image_url": "/nav_maps/test_map01.png",
+    "resolution": 0.02,
+    "origin_x": 0,
+    "origin_y": 0,
+    "width": 40,
+    "height": 24
+  },
+  "waypoints": [
+    {
+      "id": "wp-start",
+      "map_id": "demo_testMap_01",
+      "name": "起点",
+      "x": 13.138,
+      "y": 14.785,
+      "yaw": -1.512,
+      "description": "历史 Demo 预置点"
+    },
+    {
+      "id": "wp-mid01",
+      "map_id": "demo_testMap_01",
+      "name": "中途点01",
+      "x": 13.792,
+      "y": 11.971,
+      "yaw": -0.84,
+      "description": "历史 Demo 预置点"
+    },
+    {
+      "id": "wp-mid02",
+      "map_id": "demo_testMap_01",
+      "name": "中途点02",
+      "x": 23.77,
+      "y": 11.728,
+      "yaw": 0.113,
+      "description": "历史 Demo 预置点"
+    },
+    {
+      "id": "wp-mid03",
+      "map_id": "demo_testMap_01",
+      "name": "中途点03",
+      "x": 37.44,
+      "y": 11.091,
+      "yaw": 0,
+      "description": "历史 Demo 预置点"
+    },
+    {
+      "id": "wp-goal",
+      "map_id": "demo_testMap_01",
+      "name": "终点",
+      "x": 37.389,
+      "y": 9.528,
+      "yaw": -1.571,
+      "description": "历史 Demo 预置点"
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-demo-testMap01",
+      "map_id": "demo_testMap_01",
+      "name": "演示路线01",
+      "description": "历史 Demo 五点路线",
+      "waypoint_ids": [
+        "wp-start",
+        "wp-mid01",
+        "wp-mid02",
+        "wp-mid03",
+        "wp-goal"
+      ]
+    }
+  ]
+}

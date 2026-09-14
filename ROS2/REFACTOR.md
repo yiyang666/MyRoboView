@@ -1,60 +1,29 @@
-# 重构决策与首版裁剪说明
+# 重构说明
 
-## 决策：选择方案二
+## 选择
 
-采用“参考 LYOS 版建立 ROS2 Demo”。当前运行目录只保留通用 C++ ROS2 监控链路。原版全部已跟踪代码及发布资源保存在 `Master@42a39bf`，不在 develop 留一套仍能被误启动的 LYOS 业务后端。
+采用参考 LYOS 版、独立实现 ROS2 Demo 的路线。Master 保留原始业务版；develop 移除私有 SDK、产品宏、动作与标定依赖。前端保留 React 布局和组件，不升级工具链。
 
-| 比较项 | 方案一：原业务版内逐项删除 | 方案二：独立 ROS2 Demo（采用） |
-|---|---|---|
-| 复用界面 | 初期更多 | 复用原 React 布局与可用组件，仅替换数据适配 |
-| 旧耦合风险 | 需跨订阅/API/状态/页面联动修剪 | 核心从 ROS2 契约开始 |
-| 首轮验证 | 容易被私有库、导航服务、产品模型阻塞 | 独立 Mock 即可端到端验证 |
-| 迁移规模 | 容易顺带迁移不需要的业务 | 按需单独迁移能力 |
-| 代价 | 回归矩阵大，裁剪容易遗漏入口 | 3D/曲线等成熟页面需后续迁入 |
+本次将上一版共享平台包拆成独立 robotapp 和 Drogon backend。二者只有 ROS 消息契约关联，不共享运行配置，也不互相启动。
 
-原版已有的动态话题配置、状态显示、独立连接状态等思路保留，但不维持旧 `/api/v1/control/*` 和 WebSocket 业务协议兼容。
+## 职责
 
-## 变更清单
+- robotapp：C++ / rclcpp 发布机器人状态、标准 IMU、电机健康。独立配置发布话题和频率，正常模式按时间转换状态，fault 场景模拟异常。
+- robot_msgs/node_app_msgs：RobotState、MotorHealth、MotorHealthArray 的唯一自定义定义，colcon 生成类型支持。
+- robot_msgs/ros_msgs：本机 Jazzy 标准消息参考快照及上游 package 元数据；不创建同名 ROS 包。编译链接系统标准消息，避免类型冲突。
+- myroboview/backend：Drogon HTTP/WebSocket、rclcpp 通用订阅、ROS introspection 转 JSON、缓存和按配置频率广播。配置类型必须已安装类型支持。
+- myroboview/frontend：原 React 目录整体迁移，完整协议和导航适配后续完成。
+- scripts：保留三个入口，更新为独立包路径；启动脚本退出清理自己的两个进程。
 
-| 旧路径（Master） | develop 处理 | 原因/替代 |
-|---|---|---|
-| `backend/` 已跟踪代码和配置 | 删除 | ROS2/src 内 C++ bridge、mock、core 取代；本地未跟踪认证文件仍留在磁盘 |
-| `my-app/src` | 按需保留/适配 | 复用 App/Sidebar/StatusBar/Page 样式与 Sidebar、StatusBar、SystemInfo 结构，新增只读 ROS2 App/hook；删除业务操作页面 |
-| `my-app/package*.json`、基础 public | 保留 | 沿用已有 React 工具链，Demo 阶段不扩大为前端重构；依赖精简另行处理 |
-| `my-app/assets` | 移出当前版本 | 大型产品模型在 Master 可回溯，Demo 不需加载 |
-| `my-app/.gitignore` | 保留 | 继续隐藏原本地缓存、STL 工具输入、public 模型副本 |
-| 根 CMakeLists/package.xml/package-lock | 删除 | 独立 ROS2 工作区中两个 ament 包，避免根包吞掉子包发现 |
-| `start_dev.sh` | 删除 | scripts/build.sh、run_demo.sh、test.sh |
-| `nginx/` 原脚本/配置 | 删除 | 原路径/业务 API 不再适用；Orin 文档提供新部署方案 |
-| 旧 README/架构/构建/导航文档 | 替换/删除 | 根 README 和 ROS2 目录建立新的事实入口 |
+ROS 接收与网络发送分线程，缓存和客户端集合有锁保护。广播频率独立于接收频率，只发送最新缓存，waiting/stale/error 状态明确随帧发出。
 
-不清理用户本地已忽略的 node_modules、build、STL 和认证文件；它们不参与新构建，也不推送远程。`Master` 没有修复原代码格式、改写业务或改造原构建。首次快照仅新增必要忽略规则。
+## 导航来源与边界
 
-## 本轮的技术边界
+参考 `/home/ethan/workspace/RoboView_history/roboview` 的 `release/lrd-w/rk3588/v1.1.0`（实际为 tag），提交 `ff313d860167a92dde432ab710920b17faaaaf0d`。
+沿用测试地图、五个预置目标点和路线数据，重写独立导航状态逻辑。支持内存中的目标点/路线增删、启动、暂停、继续、停止、到点完成。重启恢复预置数据。
 
-- 两个 ROS 包：`myroboview_interfaces` 定义契约；`myroboview_platform` 提供 C++17 `bridge` 与 `mock` 可执行文件。
-- 使用 `rclcpp::create_generic_subscription` 和 ROS C++ introspection；类型支持库按配置动态加载，不关联 LYOS SDK。
-- HTTP 使用 Boost.Beast，JSON 使用 JsonCpp；相比旧 Drogon，基础依赖可以通过 Ubuntu 系统包独立安装，无需原工程库。后续若运维接口需要成熟 Web 框架，可以在 HTTP 边界内替换。
-- 前端复用原 RoboView React 工程及布局/组件结构，只新增 `useRos2State` 适配只读快照。主界面 3000 代理至后端 8080；后端自带一个极小诊断入口。Demo 不追求完整前端功能，也不做工具链升级。
-- 保留原 package/lock 便于直接复用本机依赖；其中 3D 等依赖暂未在 App 导入，不代表功能已迁移。后续需要时从 Master 迁入相应组件。
-- Mock CPU/内存、电量等均为合成数据，不宣称是运行主机的真实指标，也不是物理仿真器。
-- 当前只读，无认证页面，绑定 127.0.0.1；远程通过 SSH 隧道。添加写操作前需单独实现授权、审计及机器人侧保护。
+导航按直线路段插值，不做规划、避障、定位或真实机器人控制。无 LYOS 依赖，不扫描真实机器地图、资源或日志路径。
 
-## 回溯与后续迁移
+## 未完成事项
 
-```bash
-# 在单独目录查看完整初始版本，避免影响 develop 工作目录
-git worktree add ../MyRoboView-lyos-reference Master
-# 比较原始构建或接口
-git show Master:CMakeLists.txt
-git show Master:backend/include/api_handlers.h
-```
-
-后续每个能力独立提交：先定义消息/配置与验收，再迁移表现层或适配代码，最后添加真实消息回归。不要整目录复制旧 API、产品宏、硬编码文件路径和业务消息依赖。
-
-## Git 约定
-
-- 保留大小写准确的 `Master`，作为原始快照和默认分支。
-- 开发、方案和本次裁剪提交到 `develop`，设置 `origin/develop` 跟踪。
-- 后续按 ROS2/ROADMAP.md 阶段拆分提交；不向 Master 合并日常开发。
-- 用户要求的是源码基线，未配置生产部署，也未变更原 RoboView 工作区。
+前端状态栏/导航适配、生产认证、慢客户端背压、长期压力测试、真实机器人接口与 Orin NX 部署均未完成。默认回环监听，导航写接口仅改变本地模拟状态。

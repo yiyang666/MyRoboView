@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>robotapp</name><version>0.2.0</version>
+  <description>Independent simulated robot application; ROS publishers only.</description>
+  <maintainer email="yiyang666@users.noreply.github.com">yiyang666</maintainer>
+  <license>Proprietary</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend><depend>ament_index_cpp</depend>
+  <depend>node_app_msgs</depend><depend>sensor_msgs</depend><depend>jsoncpp</depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

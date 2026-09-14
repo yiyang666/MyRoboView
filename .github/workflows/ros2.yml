@@ -8,19 +8,11 @@ permissions:
   contents: read
 jobs:
   build-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - distro: humble
-            image: ros:humble-ros-base-jammy
-          - distro: jazzy
-            image: ros:jazzy-ros-base-noble
     runs-on: ubuntu-latest
-    container: ${{ matrix.image }}
+    container: ros:jazzy-ros-base-noble
     timeout-minutes: 15
     env:
-      ROS_DISTRO: ${{ matrix.distro }}
+      ROS_DISTRO: jazzy
       CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +20,7 @@ jobs:
         shell: bash
         run: |
           apt-get update
-          apt-get install -y build-essential cmake python3-colcon-common-extensions libboost-system-dev libjsoncpp-dev ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-nav-msgs ros-$ROS_DISTRO-rosidl-default-generators ros-$ROS_DISTRO-rosidl-typesupport-introspection-cpp
+          apt-get install -y build-essential cmake python3-colcon-common-extensions libdrogon-dev libjsoncpp-dev ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-nav-msgs ros-$ROS_DISTRO-rosidl-default-generators ros-$ROS_DISTRO-rosidl-typesupport-introspection-cpp
       - name: Build C++ nodes and custom interfaces
         shell: bash
         run: ./scripts/build.sh
