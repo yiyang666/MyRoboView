@@ -1,0 +1,23 @@
+# myroboview backend config for lrs-x
+
+# 产品信息
+robot_type: humanoid
+product: lrs-x
+platform: nx # 部署目标平台、x86_64是调试平台
+
+# 硬件信息
+motor_count: 26
+
+# 话题订阅
+topics:
+  - name: robot_state
+    topic: /robot/state
+    type: node_app_msgs/msg/RobotState
+    event: robot_state
+    broadcast_hz: 5
+    stale_sec: 2
+    qos:
+      reliability: reliable
+      durability: volatile
+      depth: 10
+  

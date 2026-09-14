@@ -1,0 +1,135 @@
+{
+  "schema_version": 2,
+  "robot": {
+    "type": "quadruped_wheeled",
+    "product": "lrd-w",
+    "id": "lrd-w-01",
+    "description": "LRD-W 01 四足轮式机器人"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "poll_ms": 500,
+    "tick_ms": 20
+  },
+  "topics": [
+    {
+      "id": "robot_state",
+      "label": "机器人状态",
+      "topic": "/robot/state",
+      "type": "node_app_msgs/msg/RobotState",
+      "event": "robot_state",
+      "broadcast_hz": 5,
+      "stale_sec": 2,
+      "qos": {
+        "reliability": "reliable",
+        "durability": "volatile",
+        "depth": 10
+      },
+      "metrics": [
+        {
+          "label": "当前模式",
+          "field": "current_mode",
+          "unit": ""
+        },
+        {
+          "label": "当前动作",
+          "field": "current_action",
+          "unit": ""
+        },
+        {
+          "label": "运行状态",
+          "field": "running_status",
+          "unit": ""
+        },
+        {
+          "label": "电机总状态",
+          "field": "motor_status",
+          "unit": ""
+        },
+        {
+          "label": "电池电量",
+          "field": "battery_percentage",
+          "unit": "%"
+        },
+        {
+          "label": "电池电压",
+          "field": "battery_voltage",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "id": "imu",
+      "label": "IMU",
+      "topic": "/imu/data",
+      "type": "sensor_msgs/msg/Imu",
+      "event": "sensor_data",
+      "broadcast_hz": 10,
+      "stale_sec": 2,
+      "qos": {
+        "reliability": "best_effort",
+        "durability": "volatile",
+        "depth": 10
+      },
+      "metrics": [
+        {
+          "label": "角速度 Z",
+          "field": "angular_velocity.z",
+          "unit": "rad/s"
+        },
+        {
+          "label": "加速度 Z",
+          "field": "linear_acceleration.z",
+          "unit": "m/s²"
+        }
+      ]
+    },
+    {
+      "id": "motor_health",
+      "label": "电机健康",
+      "topic": "/motors/health",
+      "type": "node_app_msgs/msg/MotorHealthArray",
+      "event": "motor_health",
+      "broadcast_hz": 2,
+      "stale_sec": 2,
+      "qos": {
+        "reliability": "reliable",
+        "durability": "volatile",
+        "depth": 10
+      },
+      "metrics": [
+        {
+          "label": "电机 0 在线",
+          "field": "motors.0.online",
+          "unit": ""
+        },
+        {
+          "label": "方向",
+          "field": "motors.0.direction",
+          "unit": ""
+        },
+        {
+          "label": "温度",
+          "field": "motors.0.temperature_celsius",
+          "unit": "°C"
+        },
+        {
+          "label": "母线电压",
+          "field": "motors.0.bus_voltage",
+          "unit": "V"
+        },
+        {
+          "label": "位置零点",
+          "field": "motors.0.position_zero_rad",
+          "unit": "rad"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "enabled": true,
+    "broadcast_hz": 5,
+    "speed_mps": 0.8
+  }
+}
