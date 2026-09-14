@@ -38,7 +38,8 @@ export default function useRos2State() {
     };
     connect();
     const watchdog = setInterval(() => {
-      if (lastFrame && Date.now() - lastFrame > 5000) { setConnected(false); socket?.close(); }
+      // Configuration permits broadcasts as slow as 0.1 Hz.
+      if (lastFrame && Date.now() - lastFrame > 15000) { setConnected(false); socket?.close(); }
     }, 1000);
     return () => { stopped = true; clearTimeout(retry); clearInterval(watchdog); controller?.abort(); socket?.close(); };
   }, []);

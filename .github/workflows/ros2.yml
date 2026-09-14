@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           apt-get update
-          apt-get install -y build-essential cmake python3-colcon-common-extensions libdrogon-dev libjsoncpp-dev libpq-dev libmariadb-dev libsqlite3-dev libhiredis-dev ros-$ROS_DISTRO-rclpy ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-nav-msgs ros-$ROS_DISTRO-rosidl-default-generators ros-$ROS_DISTRO-rosidl-typesupport-introspection-cpp
+          apt-get install -y build-essential cmake python3-colcon-common-extensions libdrogon-dev libjsoncpp-dev libpq-dev libmariadb-dev libsqlite3-dev libhiredis-dev libbrotli-dev ros-$ROS_DISTRO-rclpy ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-nav-msgs ros-$ROS_DISTRO-rosidl-default-generators ros-$ROS_DISTRO-rosidl-typesupport-introspection-cpp
       - name: Build C++ nodes and custom interfaces
         shell: bash
         run: ./scripts/build.sh

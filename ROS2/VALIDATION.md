@@ -20,4 +20,4 @@
 - 浏览器验证后端退出后显示离线并禁用控制，重连时重新获取资源。业务 WebSocket 使用 /api/v1/telemetry，兼容 /ws，避开 CRA 热更新通道。
 - 未进行 3D 展示、真实机器人命令执行或 Orin NX 实机测试。建图为指令与状态模拟，不生成 SLAM 地图。
 
-上一版 GitHub CI 因发行版 Drogon 的 CMake 依赖缺少 PostgreSQL 开发库而失败；本轮 CI 补充数据库链接依赖，与本机既有依赖环境分开验证。
+上一版 GitHub CI 因发行版 Drogon 的 CMake 依赖缺少 PostgreSQL 开发库而失败；本轮 CI 补充数据库与 Brotli 链接依赖，与本机既有依赖环境分开验证。
