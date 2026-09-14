@@ -6,6 +6,8 @@ import Sidebar from './components/Sidebar';
 import StatusBar from './components/StatusBar';
 import SystemInfo from './components/pages/SystemInfo';
 import useRos2State from './ros2/useRos2State';
+import MotorStatus from './components/pages/MotorStatus';
+import MapNavigation from './components/pages/MapNavigation/MapNavigation';
 
 const labels = { live: '实时', stale: '已超时', waiting: '等待消息', error: '数据异常' };
 function field(data, path) {
@@ -19,7 +21,7 @@ function display(value, scale = 1) {
 export default function App() {
   const [menu, setMenu] = useState('telemetry');
   const [inspected, setInspected] = useState('');
-  const { snapshot, connected } = useRos2State();
+  const { snapshot, navState, connected } = useRos2State();
   const topics = snapshot?.topics || [];
   const selected = topics.find(t => t.id === inspected) || topics[0];
   return <div className="app-container">
@@ -27,7 +29,7 @@ export default function App() {
     <main className="main-content">
       <StatusBar snapshot={snapshot} connected={connected} />
       {!connected && <div className="ros2-warning" role="alert">正在连接监控服务；已有数值为历史采样。</div>}
-      {menu === 'system' ? <SystemInfo robot={snapshot?.robot} connected={connected} /> : <div className="page-container">
+      {menu === 'navigation' ? <div className="navigation-section"><MapNavigation navState={navState} connected={connected} /></div> : menu === 'motors' ? <MotorStatus snapshot={snapshot} connected={connected} /> : menu === 'system' ? <SystemInfo robot={snapshot?.robot} connected={connected} /> : <div className="page-container">
         <h2 className="page-title">{menu === 'telemetry' ? `${snapshot?.robot.name || '机器人'} · 实时监控` : 'ROS2 话题健康'}</h2>
         {menu === 'telemetry' ? <div className="sensor-grid">{topics.map(topic => <article key={topic.id} className={`sensor-card ${!connected || topic.state !== 'live' ? 'disconnected' : ''}`}>
           <div className="page-card-header"><h3>{topic.label}</h3><span className="ros2-badge">{connected ? labels[topic.state] : '服务离线'}</span></div>

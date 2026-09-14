@@ -10,5 +10,8 @@ module.exports = function setupProxy(app) {
     }
     next();
   });
+  // CRA reserves /ws for hot reload; telemetry uses a distinct application path.
+  app.use(createProxyMiddleware('/api/v1/telemetry', { target: 'http://127.0.0.1:8080', changeOrigin: true, ws: true }));
   app.use('/api', createProxyMiddleware({ target: 'http://127.0.0.1:8080', changeOrigin: true }));
+  app.use('/nav_maps', createProxyMiddleware({ target: 'http://127.0.0.1:8080', changeOrigin: true }));
 };

@@ -21,6 +21,7 @@ class TelemetrySocket : public drogon::WebSocketController<TelemetrySocket, fals
   void handleNewMessage(const drogon::WebSocketConnectionPtr &, std::string &&, const drogon::WebSocketMessageType &) override;
   WS_PATH_LIST_BEGIN
   WS_PATH_ADD("/ws");
+  WS_PATH_ADD("/api/v1/telemetry");
   WS_PATH_LIST_END
  private:
   std::shared_ptr<BroadcastHub> hub_;

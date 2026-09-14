@@ -1,29 +1,12 @@
 #include "myroboview/core.hpp"
 #include "myroboview/api.hpp"
-#include "myroboview/introspection.hpp"
+#include "myroboview/ros_subscriber.hpp"
+#include "myroboview/command_publisher.hpp"
 #include "myroboview/websocket.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <iostream>
 #include <thread>
 
-namespace myroboview {
-class Monitor : public rclcpp::Node {
- public:
-  Monitor(const Json::Value &cfg, std::shared_ptr<StateStore> store) : Node("myroboview_backend") {
-    for (const auto &spec : cfg["topics"]) {
-      const auto id = spec["id"].asString();
-      auto decoder = std::make_shared<Decoder>(spec["type"].asString());
-      subscriptions_.push_back(create_generic_subscription(spec["topic"].asString(), spec["type"].asString(), qos(spec),
-        [decoder, store, id](std::shared_ptr<rclcpp::SerializedMessage> message) {
-          try { store->update(id, decoder->decode(*message)); }
-          catch (const std::exception &e) { store->reject(id, e.what()); }
-        }));
-    }
-  }
- private:
-  std::vector<rclcpp::GenericSubscription::SharedPtr> subscriptions_;
-};
-}
 int main(int argc, char **argv) {
   using namespace myroboview;
   try {
@@ -31,10 +14,12 @@ int main(int argc, char **argv) {
     const auto share = ament_index_cpp::get_package_share_directory("myroboview_backend");
     rclcpp::init(0, nullptr);
     auto store = std::make_shared<StateStore>(cfg);
-    auto node = std::make_shared<Monitor>(cfg, store);
+    auto node = std::make_shared<RosSubscriber>(cfg, store);
+    auto commands = std::make_shared<CommandPublisher>(*node);
     auto hub = std::make_shared<BroadcastHub>();
     std::shared_ptr<Navigation> nav;
-    if (cfg["navigation"]["enabled"].asBool()) nav = std::make_shared<Navigation>(share + "/assets/navigation.json", cfg["navigation"]["speed_mps"].asDouble());
+    if (cfg["navigation"]["enabled"].asBool()) nav = std::make_shared<Navigation>(share + "/assets/navigation.json", cfg["navigation"]["speed_mps"].asDouble(),
+      [commands](const auto &category, const auto &function, const auto &param) { commands->publish(category, function, param); });
     auto &app = drogon::app();
     app.disableSigtermHandling().setThreadNum(1).setLogLevel(trantor::Logger::kWarn);
     app.setMaxConnectionNum(64).setClientMaxBodySize(64 * 1024).setClientMaxWebSocketMessageSize(1024);
@@ -64,9 +49,13 @@ int main(int argc, char **argv) {
       try { executor.spin(); } catch (...) { ros_error = std::current_exception(); }
       app.getLoop()->queueInLoop([] { drogon::app().quit(); });
     });
-    std::cout << "Drogon backend: http://127.0.0.1:" << cfg["server"]["port"] << " /ws; ROS receive only, navigation simulation only" << std::endl;
+    std::cout << "MyRoboView server: http://127.0.0.1:" << cfg["server"]["port"] << " /ws; telemetry subscriber + /iot/command publisher + navigation demo" << std::endl;
     try { app.run(); } catch (...) { web_error = std::current_exception(); }
-    executor.cancel(); ros.join(); rclcpp::shutdown();
+    executor.cancel(); ros.join();
+    // Drogon's static handlers retain the command sink until process teardown.
+    // Release ROS entities now, while the ROS context is still alive.
+    commands->close();
+    rclcpp::shutdown();
     if (ros_error) std::rethrow_exception(ros_error);
     if (web_error) std::rethrow_exception(web_error);
     return 0;

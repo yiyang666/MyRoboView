@@ -29,7 +29,7 @@ void register_api(std::shared_ptr<StateStore> store, std::shared_ptr<Navigation>
     response->addHeader("Cache-Control", "no-store"); response->addHeader("X-Content-Type-Options", "nosniff");
   });
   app.registerHandler("/api/v1/health", [nav](const drogon::HttpRequestPtr &, Callback &&cb) {
-    Json::Value v; v["status"] = "ok"; v["framework"] = "drogon"; v["robot_control"] = false; v["navigation_demo"] = bool(nav);
+    Json::Value v; v["status"] = "ok"; v["framework"] = "drogon"; v["robot_control"] = bool(nav); v["navigation_demo"] = bool(nav);
     cb(drogon::HttpResponse::newHttpJsonResponse(v));
   }, {drogon::Get});
   app.registerHandler("/api/v1/state", [store](const drogon::HttpRequestPtr &, Callback &&cb) { cb(drogon::HttpResponse::newHttpJsonResponse(store->snapshot())); }, {drogon::Get});
@@ -44,6 +44,10 @@ void register_api(std::shared_ptr<StateStore> store, std::shared_ptr<Navigation>
     }, {drogon::Get});
   }
   if (!nav) return;
+  app.registerHandler("/api/v1/nav/mapping/start", [nav](const drogon::HttpRequestPtr &req, Callback &&cb) { reply(cb, [&] { return nav->mapping_start(body(req)); }); }, {drogon::Post});
+  app.registerHandler("/api/v1/nav/mapping/stop", [nav](const drogon::HttpRequestPtr &, Callback &&cb) { reply(cb, [&] { return nav->mapping_stop(); }); }, {drogon::Post});
+  app.registerHandler("/api/v1/nav/localization/start", [nav](const drogon::HttpRequestPtr &, Callback &&cb) { reply(cb, [&] { return nav->localize(Json::Value(), false); }); }, {drogon::Post});
+  app.registerHandler("/api/v1/nav/localization/manual", [nav](const drogon::HttpRequestPtr &req, Callback &&cb) { reply(cb, [&] { return nav->localize(body(req), true); }); }, {drogon::Post});
   app.registerHandler("/api/v1/nav/maps", [nav](const drogon::HttpRequestPtr &, Callback &&cb) { reply(cb, [&] { return nav->maps(); }); }, {drogon::Get});
   app.registerHandler("/api/v1/nav/maps/current/resources", [nav](const drogon::HttpRequestPtr &, Callback &&cb) { reply(cb, [&] { return nav->resources(); }); }, {drogon::Get});
   app.registerHandler("/api/v1/nav/state", [nav](const drogon::HttpRequestPtr &, Callback &&cb) { reply(cb, [&] { return nav->snapshot(); }); }, {drogon::Get});

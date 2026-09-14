@@ -4,16 +4,18 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace myroboview {
 struct NavError : std::runtime_error {
   int code;
   NavError(int code, const std::string &message) : std::runtime_error(message), code(code) {}
 };
-// In-memory demonstration only. No ROS publishers, robot SDK or filesystem writes.
+// In-memory simulation; validated actions also invoke the injected ROS command sink.
 class Navigation {
  public:
-  Navigation(const std::string &fixture, double speed);
+  using CommandSink = std::function<void(const std::string &, const std::string &, const std::string &)>;
+  Navigation(const std::string &fixture, double speed, CommandSink commands = {});
   Json::Value maps() const;
   Json::Value resources() const;
   Json::Value snapshot() const;
@@ -26,11 +28,15 @@ class Navigation {
   Json::Value pause();
   Json::Value resume();
   Json::Value stop();
+  Json::Value mapping_start(const Json::Value &body);
+  Json::Value mapping_stop();
+  Json::Value localize(const Json::Value &body, bool manual);
   void tick(double seconds);
  private:
   Json::Value state_unlocked() const;
   Json::Value point(const std::string &id) const;
   void reset_pose();
+  Json::Value command(const std::string &category, const std::string &function, const std::string &param);
   bool active() const { return status_ == "NAVIGATING" || status_ == "PAUSED"; }
   mutable std::mutex mutex_;
   Json::Value fixture_;
@@ -39,5 +45,8 @@ class Navigation {
   std::vector<Json::Value> path_;
   size_t index_ = 0;
   unsigned next_id_ = 1;
+  CommandSink commands_;
+  bool mapping_ = false;
+  std::string mapping_name_;
 };
 }

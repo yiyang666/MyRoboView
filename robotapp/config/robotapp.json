@@ -2,7 +2,7 @@
   "robot_id": "demo-01",
   "scenario": "nominal",
   "state_step_sec": 3.0,
-  "motor_count": 6,
+  "motor_count": 16,
   "topics": {
     "robot_state": {"name": "/robot/state", "hz": 20},
     "imu": {"name": "/imu/data", "hz": 100},

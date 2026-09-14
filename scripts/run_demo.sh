@@ -14,7 +14,7 @@ if [[ $# -ne 0 ]]; then
 fi
 "$repo_dir/install/robotapp/lib/robotapp/robotapp_node" --config "${ROBOTAPP_CONFIG:-$repo_dir/robotapp/config/robotapp.json}" &
 robot_pid=$!
-"$repo_dir/install/myroboview_backend/lib/myroboview_backend/myroboview_backend_node" --config "${MYROBOVIEW_CONFIG:-$repo_dir/myroboview/backend/config/myroboview.json}" &
+"$repo_dir/install/myroboview_backend/lib/myroboview_backend/myroboview_server" --config "${MYROBOVIEW_CONFIG:-$repo_dir/myroboview/backend/config/myroboview.json}" &
 backend_pid=$!
 cleanup() {
   trap - EXIT INT TERM

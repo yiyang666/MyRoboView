@@ -87,6 +87,6 @@ rclcpp::QoS qos(const Json::Value &spec) {
 std::string config_path(int argc, char **argv) {
   if (argc == 1) return ament_index_cpp::get_package_share_directory("myroboview_backend") + "/config/myroboview.json";
   if (argc == 3 && std::string(argv[1]) == "--config") return argv[2];
-  throw std::invalid_argument("Usage: myroboview_backend_node [--config PATH]");
+  throw std::invalid_argument("Usage: myroboview_server [--config PATH]");
 }
 }  // namespace myroboview

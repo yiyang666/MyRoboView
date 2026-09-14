@@ -61,6 +61,12 @@ int main(int argc, char **argv) {
     check(std::abs(nav.snapshot()["pose"]["x"].asDouble() - 37.389) < 1e-9, "final waypoint");
     bool rejected = false; try { nav.delete_waypoint("wp-start"); } catch (const myroboview::NavError &e) { rejected = e.code == 409; }
     check(rejected, "referenced point protected");
+    myroboview::Navigation failing_nav(argv[2], 1., [](const auto &, const auto &, const auto &) {
+      throw std::runtime_error("publisher failed");
+    });
+    rejected = false;
+    try { failing_nav.start(body); } catch (const std::runtime_error &) { rejected = true; }
+    check(rejected && failing_nav.snapshot()["status"] == "IDLE", "failed publish must not start simulation");
     std::cout << "PASS configuration, ROS types, broadcast limits, freshness and navigation states\n";
     return 0;
   } catch (const std::exception &e) { std::cerr << e.what() << '\n'; return 1; }

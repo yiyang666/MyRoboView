@@ -14,10 +14,12 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import rclpy
+from node_app_msgs.msg import IotCmdMsg
 
 ROOT = Path(__file__).resolve().parents[3]
 APP = ROOT / 'install/robotapp/lib/robotapp/robotapp_node'
-BACKEND = ROOT / 'install/myroboview_backend/lib/myroboview_backend/myroboview_backend_node'
+BACKEND = ROOT / 'install/myroboview_backend/lib/myroboview_backend/myroboview_server'
 
 
 class WebSocket:
@@ -83,6 +85,19 @@ def main():
         backend_path, app_path = Path(folder) / 'backend.json', Path(folder) / 'robotapp.json'
         backend_path.write_text(json.dumps(cfg)); app_path.write_text(json.dumps(app_cfg))
         processes, logs, sockets = [], [], []
+        context = rclpy.context.Context()
+        context.init(domain_id=178)
+        observer = rclpy.create_node('myroboview_command_test', context=context)
+        executor = rclpy.executors.SingleThreadedExecutor(context=context)
+        executor.add_node(observer)
+        observed, expected_commands = [], []
+        observer.create_subscription(IotCmdMsg, '/iot/command', lambda message: observed.append({
+            'category': message.category, 'fun_name': message.fun_name, 'sub': message.sub, 'param': message.param}), 10)
+
+        def collect_commands(seconds=.15):
+            deadline = time.monotonic() + seconds
+            while time.monotonic() < deadline:
+                executor.spin_once(timeout_sec=.02)
 
         def launch(binary, path):
             log = open(Path(folder) / f'{len(logs)}.log', 'w+')
@@ -112,7 +127,11 @@ def main():
             with response:
                 assert response.code == expected, f'{route}: {response.code}, wanted {expected}: {response.read()}'
                 content = response.read()
-                return json.loads(content) if response.headers.get_content_type() == 'application/json' else content
+                result = json.loads(content) if response.headers.get_content_type() == 'application/json' else content
+                if isinstance(result, dict) and result.get('published'):
+                    expected_commands.append(result['command'])
+                collect_commands(.03)
+                return result
 
         def until(predicate, route='/api/v1/state', timeout=12):
             deadline = time.monotonic() + timeout
@@ -136,7 +155,9 @@ def main():
             backend = launch(BACKEND, backend_path)
             until(lambda state: all(t['state'] == 'waiting' for t in state['topics']))
             assert request('/api/v1/health')['framework'] == 'drogon'
-            assert request('/api/v1/health')['robot_control'] is False
+            assert request('/api/v1/health')['robot_control'] is True
+            until(lambda _: observer.count_publishers('/iot/command') == 1)
+            collect_commands(.5)
             assert request('/nav_maps/test_map01.png').startswith(b'\x89PNG')
             request('/api/v1/state', method='POST', expected=405)
             request('/AGENTS.md', expected=404)
@@ -145,10 +166,28 @@ def main():
             resources = request('/api/v1/nav/maps/current/resources')
             assert len(resources['waypoints']) == 5 and len(resources['routes']) == 1
             assert resources['map']['source'] == 'demo'
+            loaded = request('/api/v1/nav/maps/load', data={'map_id': resources['map']['id']})
+            assert loaded['command'] == {'category': 'MAP', 'fun_name': 'LOAD', 'sub': '', 'param': resources['map']['name']}
+            request('/api/v1/nav/mapping/start', data={'map_name': 'bad,map'}, expected=400)
+            started = request('/api/v1/nav/mapping/start', data={'map_name': 'test_map'})
+            assert started['command']['param'] == 'online,test_map'
+            assert request('/api/v1/nav/state')['mapping']['active'] is True
+            request('/api/v1/nav/mapping/start', data={'map_name': 'duplicate'}, expected=409)
+            request('/api/v1/nav/tasks/route/start', data={'route_id': resources['routes'][0]['id']}, expected=409)
+            request('/api/v1/nav/mapping/stop', data={})
+            request('/api/v1/nav/localization/start', data={})
+            original_pose = request('/api/v1/nav/state')['pose']
+            relocated = request('/api/v1/nav/localization/manual', data={'x': 1, 'y': 2, 'yaw': .5})
+            assert relocated['command']['param'] == '1.000000,2.000000,0.500000'
+            assert request('/api/v1/nav/state')['pose']['x'] == 1
+            request('/api/v1/nav/localization/manual', data={'x': -1, 'y': 2, 'yaw': 0}, expected=400)
+            request('/api/v1/nav/localization/manual', data=original_pose)
             request('/api/v1/nav/tasks/route/pause', data={}, expected=409)
             request('/api/v1/nav/maps/load', data={'map_id': 'invalid'}, expected=404)
             route_id = resources['routes'][0]['id']
-            request('/api/v1/nav/tasks/route/start', data={'route_id': route_id})
+            started = request('/api/v1/nav/tasks/route/start', data={'route_id': route_id})
+            expected_param = ';'.join(','.join(f'{point[key]:.6f}' for key in ('x', 'y', 'yaw')) for point in resources['waypoints'])
+            assert started['command'] == {'category': 'NAV', 'fun_name': 'START', 'sub': '', 'param': expected_param}
             request('/api/v1/nav/tasks/route/start', data={'route_id': route_id}, expected=409)
             request('/api/v1/nav/routes/' + route_id, method='DELETE', expected=409)
             start_pose = request('/api/v1/nav/state')['pose']
@@ -171,6 +210,8 @@ def main():
             request('/api/v1/nav/routes/' + route['id'], method='DELETE')
             request('/api/v1/nav/waypoints/' + waypoint['id'], method='DELETE')
             request('/api/v1/nav/routes', data={'name': 'bad', 'waypoint_ids': []}, expected=400)
+            collect_commands(.5)
+            assert observed == expected_commands, (observed, expected_commands)
             app = launch(APP, app_path)
             state = until(lambda s: all(t['state'] == 'live' and t['count'] >= 3 for t in s['topics']))
             data = state['topics'][0]['data']
@@ -235,6 +276,9 @@ def main():
                             process.kill(); process.wait()
             for log in logs:
                 log.close()
+            executor.shutdown()
+            observer.destroy_node()
+            context.shutdown()
 
 
 if __name__ == '__main__':

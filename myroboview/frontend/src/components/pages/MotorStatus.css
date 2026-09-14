@@ -1,0 +1,13 @@
+.motor-summary { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:20px; color:#b0b0b0; }
+.motor-summary select { padding:8px; margin-left:8px; background:#25253e; color:white; border:1px solid #555; border-radius:6px; }
+.motor-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
+.motor-card { background:rgba(255,255,255,.03); border:2px solid #10b98140; border-left:8px solid #10b981; border-radius:20px; padding:16px; }
+.motor-card.offline { border-color:#f59e0b80; }
+.motor-card.unknown { border-color:#6b728080; opacity:.65; }
+.motor-card header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.motor-card h3 { font-size:17px; }
+.motor-card small,.motor-card code { color:#9ca3af; font-size:12px; }
+.motor-card header span { background:#ffffff10; border-radius:8px; padding:5px 12px; }
+.motor-card dl { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+.motor-card dt { color:#b0b0b0; font-size:13px; margin-bottom:4px; }
+.motor-card dd { font-size:16px; }
