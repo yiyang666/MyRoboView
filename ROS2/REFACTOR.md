@@ -24,7 +24,7 @@ ROS 接收与网络发送分线程，缓存和客户端集合有锁保护。广�
 
 导航按直线路段插值，不做规划、避障或真实定位。按钮下发 `/iot/command`，校验通过后先发布命令再改变模拟状态；发布失败不推进状态。发布成功仅表示交给 ROS 中间件，不表示机器人已接收或执行。无 LYOS 依赖，不扫描真实机器地图、资源或日志路径。
 
-程序改名为 `myroboview_server`：入口 `src/main.cpp`；订阅与解码 `src/ros_subscriber.cpp`；ROS 命令发布 `src/command_publisher.cpp`；HTTP 路由 `src/api.cpp`；内存模拟 `src/navigation.cpp`。Drogon 路由保留回调对象，因此退出前显式释放其持有的 ROS 发布器，避免静态析构晚于 ROS 上下文生命周期。
+程序改名为 `myroboview_server`：入口 `src/main.cpp`；订阅与解码 `src/ros_subscriber.cpp`；ROS 命令发布 `src/command_publisher.cpp`；HTTP 路由 `src/api.cpp`；内存模拟 `src/navigation.cpp`。Drogon 路由保留回调对象，因此退出前显式释放其持有的 ROS 发布器，避免静态析构晚于 ROS 上下文生命周期。仅由 ROS executor 退出路径请求一次 Drogon quit，避免旧版 Drogon 重复释放监听器。
 
 前端保留 assert 下资源，不加载 URDF/STL 或任何 3D 场景。只复制原版 LRD-W 关节 ID/名称配置供卡片显示；可切换为通用消息名称。Mock 默认电机数调整为 16，对应此显示配置。
 

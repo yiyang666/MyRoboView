@@ -43,8 +43,9 @@ int main(int argc, char **argv) {
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(node);
     std::exception_ptr ros_error, web_error;
-    // Queue quit on Drogon's loop: also handles shutdown just before run().
-    rclcpp::on_shutdown([] { drogon::app().getLoop()->queueInLoop([] { drogon::app().quit(); }); });
+    // Only the ROS executor requests Drogon shutdown. In Drogon 1.8, two
+    // queued quit() calls tear down the same listeners twice and can crash.
+    // Queueing also handles a signal received just before app.run().
     std::thread ros([&] {
       try { executor.spin(); } catch (...) { ros_error = std::current_exception(); }
       app.getLoop()->queueInLoop([] { drogon::app().quit(); });
