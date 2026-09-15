@@ -82,7 +82,8 @@ class WebSocket:
 def main():
     env = {**os.environ, 'ROS_DOMAIN_ID': '178', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'LOCALHOST'}
     env.pop('ROS_LOCALHOST_ONLY', None)
-    cfg = json.loads((ROOT / 'roboview/backend/config/myroboview.json').read_text())
+    # 配置按产品拆分，读取当前测试产品对应的一份
+    cfg = json.loads((ROOT / 'roboview/backend/config' / PRODUCT / 'myroboview.json').read_text())
     app_cfg = json.loads((ROOT / 'robotapp/config/robotapp.json').read_text())
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))

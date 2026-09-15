@@ -31,7 +31,9 @@ void validate_config(const Json::Value &cfg) {
     require(cfg["schema_version"].isInt() && cfg["schema_version"].asInt() == 2,
             "schema_version must be 2");
     text(cfg["robot"]["id"], 64, "robot.id");
-    text(cfg["robot"]["name"], 256, "robot.name");
+    // robot 段以 type/product 标识机型与产品（原 name 字段已移除）
+    text(cfg["robot"]["type"], 64, "robot.type");
+    text(cfg["robot"]["product"], 64, "robot.product");
     const auto &server = cfg["server"];
     require(server["host"] == "127.0.0.1",
             "Demo listens on 127.0.0.1 only; use SSH forwarding");

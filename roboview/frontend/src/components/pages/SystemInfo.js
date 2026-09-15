@@ -4,7 +4,7 @@ import './Page.css';
 
 export default function SystemInfo({ robot, connected }) {
   const fields = [
-    ['机器人名称', robot?.name], ['机器人 ID', robot?.id],
+    ['产品型号', robot?.product], ['机器人类型', robot?.type], ['机器人 ID', robot?.id],
     ['平台说明', robot?.description], ['数据通路', 'ROS2 → Drogon → WebSocket'],
     ['接口状态', connected ? '在线' : '离线'], ['功能范围', '实时监控与导航指令'],
   ];

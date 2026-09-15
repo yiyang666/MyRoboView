@@ -30,7 +30,7 @@ export default function App() {
       <StatusBar snapshot={snapshot} connected={connected} />
       {!connected && <div className="ros2-warning" role="alert">正在连接监控服务；已有数值为历史采样。</div>}
       {menu === 'navigation' ? <div className="navigation-section"><MapNavigation navState={navState} connected={connected} /></div> : menu === 'motors' ? <MotorStatus snapshot={snapshot} connected={connected} /> : menu === 'system' ? <SystemInfo robot={snapshot?.robot} connected={connected} /> : <div className="page-container">
-        <h2 className="page-title">{menu === 'telemetry' ? `${snapshot?.robot.name || '机器人'} · 实时监控` : 'ROS2 话题健康'}</h2>
+        <h2 className="page-title">{menu === 'telemetry' ? `${snapshot?.robot.description || '机器人'} · 实时监控` : 'ROS2 话题健康'}</h2>
         {menu === 'telemetry' ? <div className="sensor-grid">{topics.map(topic => <article key={topic.id} className={`sensor-card ${!connected || topic.state !== 'live' ? 'disconnected' : ''}`}>
           <div className="page-card-header"><h3>{topic.label}</h3><span className="ros2-badge">{connected ? labels[topic.state] : '服务离线'}</span></div>
           <div className="sensor-values">{topic.metrics.map(metric => <div className="sensor-value" key={metric.field}><label>{metric.label}</label><span>{display(field(topic.data, metric.field), metric.scale)} <small>{metric.unit}</small></span></div>)}</div>

@@ -9,6 +9,10 @@ find_package(ament_index_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
 find_package(Drogon CONFIG REQUIRED)
 find_package(node_app_msgs REQUIRED)
+# 产品标识：由外层统一构建体系传入，仓内直编时默认 lrs-x（配置/URDF 均按它对齐）
+if(NOT AI_TARGET_PRODUCT)
+  set(AI_TARGET_PRODUCT lrs-x)
+endif()
 add_library(backend_core backend/src/config.cpp backend/src/state.cpp backend/src/introspection.cpp backend/src/navigation.cpp)
 target_include_directories(backend_core PUBLIC backend/include)
 ament_target_dependencies(backend_core rclcpp ament_index_cpp rosidl_typesupport_introspection_cpp)
@@ -26,20 +30,20 @@ if(BUILD_TESTING)
   add_executable(core_test backend/test/core_test.cpp)
   ament_target_dependencies(core_test node_app_msgs sensor_msgs)
   target_link_libraries(core_test backend_core)
-  add_test(NAME core_test COMMAND core_test ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/myroboview.json ${CMAKE_CURRENT_SOURCE_DIR}/backend/assets/navigation.json)
+  add_test(NAME core_test COMMAND core_test ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/${AI_TARGET_PRODUCT}/myroboview.json ${CMAKE_CURRENT_SOURCE_DIR}/backend/assets/navigation.json)
 endif()
 # 安装布局与原项目对齐：二进制进 bin/，配置与导航数据进 etc/web_config/，前端静态页进 etc/web/
 install(TARGETS roboview RUNTIME DESTINATION bin)
-# auth 认证暂未启用，不进安装包
-install(DIRECTORY backend/config/ DESTINATION etc/web_config PATTERN "auth" EXCLUDE)
+# 后端配置按产品拆分（backend/config/<产品>/），只安装当前产品那一份；configure 期校验，避免安装期才失败
+set(BACKEND_CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/${AI_TARGET_PRODUCT}/myroboview.json)
+if(NOT EXISTS ${BACKEND_CONFIG})
+  message(FATAL_ERROR "缺少产品 ${AI_TARGET_PRODUCT} 的后端配置: backend/config/${AI_TARGET_PRODUCT}/myroboview.json")
+endif()
+install(FILES ${BACKEND_CONFIG} DESTINATION etc/web_config)
 install(FILES backend/assets/navigation.json DESTINATION etc/web_config)
 # 前后端按产品对齐（参考原项目实现）：
 # 前端 npm 产物（排除 robot_urdf）+ 当前产品的 asserts 资源 → etc/web/
 # 未构建过前端时安装占位页，保证 etc/web 始终可用
-if(NOT AI_TARGET_PRODUCT)
-  # 脱离外层统一构建体系单独编译时的默认产品
-  set(AI_TARGET_PRODUCT lrs-x)
-endif()
 set(FRONTEND_DIST ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build)
 if(EXISTS ${FRONTEND_DIST}/index.html)
   install(DIRECTORY ${FRONTEND_DIST}/ DESTINATION etc/web PATTERN "robot_urdf" EXCLUDE)

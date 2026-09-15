@@ -41,11 +41,13 @@ frontend/  --npm run build-->  frontend/build/  --┐
                                                   ├--CMake 安装规则-->  install/etc/web/
 asserts/${AI_TARGET_PRODUCT}/  -------------------┘   （页面 + 当前产品的 robot_urdf）
 backend/   --colcon build-->   install/bin/roboview
-                               install/etc/web_config/  （配置 + 导航数据）
+                               install/etc/web_config/  （当前产品的配置 + 导航数据）
 ```
 
 关键规则（见 `CMakeLists.txt` install 段）：
 
+- 后端配置按产品拆分在 `backend/config/<产品>/myroboview.json`，**只安装当前产品那一份**
+  （configure 期校验存在性，缺失直接报错）；
 - 前端产物 `frontend/build/` 安装时**排除 `robot_urdf`**，再由 `asserts/${AI_TARGET_PRODUCT}/`
   补入——无论前端 build 时 `public/` 里放的是哪个产品的资源，**装进包的 URDF 一定与构建产品一致**；
 - `AI_TARGET_PRODUCT` 由外层统一构建体系按产品传入（仓内直编时默认 `lrs-x`）；
