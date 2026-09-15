@@ -84,7 +84,8 @@ def main():
     env.pop('ROS_LOCALHOST_ONLY', None)
     # 配置按产品拆分，读取当前测试产品对应的一份
     cfg = json.loads((ROOT / 'roboview/backend/config' / PRODUCT / 'myroboview.json').read_text())
-    app_cfg = json.loads((ROOT / 'robotapp/config/robotapp.json').read_text())
+    # robotapp 配置同样按产品取（type/motor_count 差异化由这里进入 mock）
+    app_cfg = json.loads((ROOT / 'robotapp/config' / PRODUCT / 'robotapp.json').read_text())
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
@@ -231,8 +232,8 @@ def main():
             data = state['topics'][0]['data']
             assert 0 <= data['battery_percentage'] <= 100 and data['battery_voltage'] > 0
             motors = state['topics'][2]['data']['motors']
-            assert len(motors) == app_cfg['motor_count'] and motors[0]['online'] and motors[1]['direction'] == -1
-            assert {'motor_id', 'online', 'direction', 'temperature_celsius', 'bus_voltage', 'position_zero_rad'} <= motors[0].keys()
+            assert len(motors) == app_cfg['motor_count'] and motors[0]['online_status'] == 0 and motors[1]['motor_direction'] == -1
+            assert {'motor_id', 'online_status', 'health_status', 'motor_direction', 'motor_temperature', 'motor_voltage', 'motor_position_zero_rad'} <= motors[0].keys()
             ws, second = websocket(), websocket()
             counts = Counter(); phases = set(); deadline = time.monotonic() + 2.5
             while time.monotonic() < deadline:
@@ -243,7 +244,9 @@ def main():
                     assert frame['receive_hz'] > 50
             for event, hz in [('robot_state', 5), ('sensor_data', 10), ('motor_health', 2), ('nav_state', 5)]:
                 assert 2.5 * hz * .6 <= counts[event] <= 2.5 * hz * 1.4 + 2, (event, counts)
-            assert {'WALK', 'TURN'} <= phases, phases
+            # 动作集按产品差异化（与 robotapp 状态机一致）：人形 WALK+WAVE，四足轮式 WALK+RUN
+            expected_actions = {2, 5} if PRODUCT == 'lrs-x' else {2, 3}
+            assert expected_actions <= phases, phases
             assert second.message()['type'] in counts
             stop(app)
             until(lambda s: all(t['state'] == 'stale' for t in s['topics']))
@@ -258,7 +261,7 @@ def main():
                 raise AssertionError('No stale WebSocket status')
             app_cfg['scenario'] = 'fault'; app_path.write_text(json.dumps(app_cfg))
             app = launch(APP, app_path)
-            until(lambda s: all(t['state'] == 'live' for t in s['topics']) and s['topics'][0]['data']['running_status'] == 3 and not s['topics'][2]['data']['motors'][0]['online'])
+            until(lambda s: all(t['state'] == 'live' for t in s['topics']) and s['topics'][0]['data']['running_status'] == 3 and s['topics'][2]['data']['motors'][0]['online_status'] == 1 and s['topics'][2]['data']['motors'][0]['health_status'] == 2)
             stop(app)
             for ws in sockets:
                 ws.close()

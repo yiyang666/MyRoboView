@@ -2,7 +2,8 @@
 #include "roboview/introspection.hpp"
 #include "roboview/navigation.hpp"
 #include <node_app_msgs/msg/robot_state.hpp>
-#include <node_app_msgs/msg/motor_health_array.hpp>
+#include <node_app_msgs/msg/motor_health.hpp>
+#include <node_app_msgs/msg/motor_health_state.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <limits>
 #include <iostream>
@@ -66,21 +67,25 @@ int main(int argc, char **argv) {
         store.update("imu", Json::Value(3));
         check(store.snapshot()["topics"][1]["state"] == "live", "recovery");
         node_app_msgs::msg::RobotState state;
-        state.current_action = "WALK";
+        state.current_action = node_app_msgs::msg::RobotState::ACTION_WALK;
         state.battery_percentage = 76.;
         auto s = decode("node_app_msgs/msg/RobotState", state);
-        check(s["current_action"] == "WALK" && s["battery_percentage"] == 76.,
+        check(s["current_action"].asUInt() ==
+                      node_app_msgs::msg::RobotState::ACTION_WALK &&
+                  s["battery_percentage"] == 76.,
               "robot contract");
-        node_app_msgs::msg::MotorHealthArray motors;
-        node_app_msgs::msg::MotorHealth m;
-        m.online = true;
-        m.direction = -1;
-        m.position_zero_rad = 0.5;
+        node_app_msgs::msg::MotorHealth motors;
+        node_app_msgs::msg::MotorHealthState m;
+        m.online_status = node_app_msgs::msg::MotorHealthState::STATUS_ONLINE;
+        m.motor_direction = node_app_msgs::msg::MotorHealthState::REVERSE;
+        m.motor_position_zero_rad = 0.5;
         motors.motors.push_back(m);
-        auto a = decode("node_app_msgs/msg/MotorHealthArray", motors);
-        check(a["motors"][0]["online"].asBool() &&
-                  a["motors"][0]["direction"].asInt() == -1 &&
-                  a["motors"][0]["position_zero_rad"] == 0.5,
+        auto a = decode("node_app_msgs/msg/MotorHealth", motors);
+        check(a["motors"][0]["online_status"].asUInt() ==
+                      node_app_msgs::msg::MotorHealthState::STATUS_ONLINE &&
+                  a["motors"][0]["motor_direction"].asInt() ==
+                      node_app_msgs::msg::MotorHealthState::REVERSE &&
+                  a["motors"][0]["motor_position_zero_rad"] == 0.5,
               "motor array");
         sensor_msgs::msg::Imu imu;
         imu.angular_velocity.z = std::numeric_limits<double>::quiet_NaN();

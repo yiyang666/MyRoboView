@@ -3,6 +3,8 @@
 .motor-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
 .motor-card { background:rgba(255,255,255,.03); border:2px solid #10b98140; border-left:8px solid #10b981; border-radius:20px; padding:16px; }
 .motor-card.offline { border-color:#f59e0b80; }
+.motor-card.warning { border-color:#eab308; }
+.motor-card.error { border-color:#ef4444; }
 .motor-card.unknown { border-color:#6b728080; opacity:.65; }
 .motor-card header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .motor-card h3 { font-size:17px; }

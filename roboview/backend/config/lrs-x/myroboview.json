@@ -44,7 +44,7 @@
         },
         {
           "label": "电机总状态",
-          "field": "motor_status",
+          "field": "motor_overall_status",
           "unit": ""
         },
         {
@@ -89,7 +89,7 @@
       "id": "motor_health",
       "label": "电机健康",
       "topic": "/motors/health",
-      "type": "node_app_msgs/msg/MotorHealthArray",
+      "type": "node_app_msgs/msg/MotorHealth",
       "event": "motor_health",
       "broadcast_hz": 2,
       "stale_sec": 2,
@@ -101,27 +101,32 @@
       "metrics": [
         {
           "label": "电机 0 在线",
-          "field": "motors.0.online",
+          "field": "motors.0.online_status",
+          "unit": ""
+        },
+        {
+          "label": "健康状态",
+          "field": "motors.0.health_status",
           "unit": ""
         },
         {
           "label": "方向",
-          "field": "motors.0.direction",
+          "field": "motors.0.motor_direction",
           "unit": ""
         },
         {
           "label": "温度",
-          "field": "motors.0.temperature_celsius",
+          "field": "motors.0.motor_temperature",
           "unit": "°C"
         },
         {
           "label": "母线电压",
-          "field": "motors.0.bus_voltage",
+          "field": "motors.0.motor_voltage",
           "unit": "V"
         },
         {
           "label": "位置零点",
-          "field": "motors.0.position_zero_rad",
+          "field": "motors.0.motor_position_zero_rad",
           "unit": "rad"
         }
       ]
