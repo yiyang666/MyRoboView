@@ -14,7 +14,7 @@ roboview/
 └── frontend/                      # React 前端（CRA）
     ├── src/ public/               #   源码与静态资源
     ├── asserts/<产品>/robot_urdf/ #   按产品划分的 URDF 资源（前后端对齐的关键）
-    └── build/                     #   npm 生产产物（gitignore，由 npm run build 生成）
+    └── build/<产品>/              #   npm 生产产物（gitignore，按产品分目录防互相覆盖）
 ```
 
 ## 开发态（日常调试，仅 x86_64）
@@ -36,9 +36,9 @@ roboview/
 ## 生产态（安装包 / 部署）
 
 ```
-frontend/  --npm ci + npm run build-->  frontend/build/  --┐
-           （CMake 随 colcon build 自动编排）                ├--CMake 安装规则-->  install/etc/web/
-asserts/${AI_TARGET_PRODUCT}/  ---------------------------┘   （页面 + 当前产品的 robot_urdf）
+frontend/  --npm ci + npm run build-->  frontend/build/<产品>/  --┐
+           （CMake 随 colcon build 自动编排）                     ├--CMake 安装规则-->  install/etc/web/
+asserts/${AI_TARGET_PRODUCT}/  --------------------------------┘   （页面 + 当前产品的 robot_urdf）
 backend/   --colcon build-->   install/bin/roboview
                                install/etc/web_config/  （当前产品的配置 + 导航数据）
 ```

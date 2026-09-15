@@ -96,11 +96,13 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
 )
 # 构建层：CI=true 让 CRA 把 warning 当错误；REACT_APP_PRODUCT 注入当前产品（电机卡片等按产品差异化）
+# BUILD_PATH 按产品分目录输出：双产品交替构建时互不覆盖，install 不会误装对方产物
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/index.html
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/${AI_TARGET_PRODUCT}/index.html
     COMMAND ${CMAKE_COMMAND} -E env
         CI=true
         REACT_APP_PRODUCT=${AI_TARGET_PRODUCT}
+        BUILD_PATH=build/${AI_TARGET_PRODUCT}
         npm run build
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/.npm_stamp
@@ -108,7 +110,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
 )
 add_custom_target(frontend_build ALL
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/index.html
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/${AI_TARGET_PRODUCT}/index.html
 )
 
 # ------------------------------------------------------------
@@ -133,8 +135,8 @@ install(FILES backend/assets/navigation.json
     DESTINATION etc/web_config
 )
 
-# 前端 npm 产物 → etc/web/（由 frontend_build 保证存在；robot_urdf 不经 npm，由下方 asserts 规则直装）
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/
+# 前端 npm 产物（按产品分目录）→ etc/web/（由 frontend_build 保证存在；robot_urdf 不经 npm，由下方 asserts 规则直装）
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/${AI_TARGET_PRODUCT}/
     DESTINATION etc/web
     PATTERN "robot_urdf" EXCLUDE
 )
