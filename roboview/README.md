@@ -10,7 +10,6 @@ roboview/
 ├── backend/                       # Drogon C++ 后端
 │   ├── src/ include/              #   服务入口、REST API、WebSocket、ROS 订阅
 │   ├── config/ assets/            #   运行配置、导航数据、地图
-│   ├── web/                       #   前端产物缺失时的占位页
 │   └── test/ integration_tests/   #   单元测试、集成测试
 └── frontend/                      # React 前端（CRA）
     ├── src/ public/               #   源码与静态资源
@@ -37,9 +36,9 @@ roboview/
 ## 生产态（安装包 / 部署）
 
 ```
-frontend/  --npm run build-->  frontend/build/  --┐
-                                                  ├--CMake 安装规则-->  install/etc/web/
-asserts/${AI_TARGET_PRODUCT}/  -------------------┘   （页面 + 当前产品的 robot_urdf）
+frontend/  --npm ci + npm run build-->  frontend/build/  --┐
+           （CMake 随 colcon build 自动编排）                ├--CMake 安装规则-->  install/etc/web/
+asserts/${AI_TARGET_PRODUCT}/  ---------------------------┘   （页面 + 当前产品的 robot_urdf）
 backend/   --colcon build-->   install/bin/roboview
                                install/etc/web_config/  （当前产品的配置 + 导航数据）
 ```
@@ -51,7 +50,9 @@ backend/   --colcon build-->   install/bin/roboview
 - 前端产物 `frontend/build/` 安装时**排除 `robot_urdf`**，再由 `asserts/${AI_TARGET_PRODUCT}/`
   补入——无论前端 build 时 `public/` 里放的是哪个产品的资源，**装进包的 URDF 一定与构建产品一致**；
 - `AI_TARGET_PRODUCT` 由外层统一构建体系按产品传入（仓内直编时默认 `lrs-x`）；
-- 未执行过 `npm run build` 时安装 `backend/web/` 占位页，保证 `etc/web/` 始终可用；
+- 前端构建由 CMake 随 `colcon build` 自动编排：`package-lock.json` 变化才 `npm ci`（严格按锁安装），
+  前端源码变化才 `npm run build`，CI 全新工作区必然全量构建——无需手工执行 npm 命令；
+  构建机需具备 node/npm（新机器可跑外层 `make install_all_dependencies`）；
 - 部署时后端直接托管页面：`main.cpp` 将 Drogon 的 document root 设为 `<安装前缀>/etc/web`，
   浏览器访问 **:8080** 即是完整系统（无需单独前端服务器）。
 

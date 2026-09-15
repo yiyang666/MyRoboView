@@ -80,6 +80,36 @@ if(BUILD_TESTING)
     )
 endif()
 
+# 前端构建：lock 变化才 npm ci，源码变化才重打包；CI 全新工作区必然全量构建
+file(GLOB_RECURSE FRONTEND_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/frontend/src/*
+    ${CMAKE_CURRENT_SOURCE_DIR}/frontend/public/*
+)
+# 依赖层：stamp 记录在构建目录，不污染源码树
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/.npm_stamp
+    COMMAND npm ci --prefer-offline --no-audit --no-fund
+    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/.npm_stamp
+    DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/frontend/package.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/frontend/package-lock.json
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
+)
+# 构建层：CI=true 让 CRA 把 warning 当错误，保证入包代码干净
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/index.html
+    COMMAND ${CMAKE_COMMAND} -E env
+        CI=true
+        npm run build
+    DEPENDS
+        ${CMAKE_CURRENT_BINARY_DIR}/.npm_stamp
+        ${FRONTEND_SOURCES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
+)
+add_custom_target(frontend_build ALL
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/index.html
+)
+
 # ------------------------------------------------------------
 # 安装规则
 # 布局与原项目对齐：二进制进 bin/，配置与导航数据进 etc/web_config/，前端静态页进 etc/web/
@@ -102,20 +132,11 @@ install(FILES backend/assets/navigation.json
     DESTINATION etc/web_config
 )
 
-# 前端 npm 产物（排除 robot_urdf）+ 当前产品的 asserts 资源 → etc/web/
-# 未构建过前端时安装占位页，保证 etc/web 始终可用
-set(FRONTEND_DIST
-    ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build)
-if(EXISTS ${FRONTEND_DIST}/index.html)
-    install(DIRECTORY ${FRONTEND_DIST}/
-        DESTINATION etc/web
-        PATTERN "robot_urdf" EXCLUDE
-    )
-else()
-    install(DIRECTORY backend/web/
-        DESTINATION etc/web
-    )
-endif()
+# 前端 npm 产物 → etc/web/（由 frontend_build 保证存在；robot_urdf 不经 npm，由下方 asserts 规则直装）
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/
+    DESTINATION etc/web
+    PATTERN "robot_urdf" EXCLUDE
+)
 
 set(ROBOT_ASSERTS
     ${CMAKE_CURRENT_SOURCE_DIR}/frontend/asserts/${AI_TARGET_PRODUCT})
