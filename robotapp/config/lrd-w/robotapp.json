@@ -1,8 +1,8 @@
 {
   "robot": {
     "type": "quadruped_wheeled",
-    "product": "demo",
-    "id": "demo-01"
+    "product": "lrd-w",
+    "id": "lrd-w-01"
   },
   "scenario": "nominal",
   "state_step_sec": 3.0,

@@ -11,6 +11,11 @@ find_package(node_app_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
 
+# 产品标识：由外层统一构建体系传入（与 roboview 对齐），仓内直编时默认 lrs-x
+if(NOT AI_TARGET_PRODUCT)
+    set(AI_TARGET_PRODUCT lrs-x)
+endif()
+
 add_executable(robotapp_node
     src/main.cpp
 )
@@ -56,7 +61,15 @@ endif()
 install(TARGETS robotapp_node
     RUNTIME DESTINATION bin
 )
-install(DIRECTORY config/
+
+# mock 配置按产品拆分（config/<产品>/），只安装当前产品那一份为默认配置
+# configure 期校验存在性，避免安装期才失败
+set(ROBOTAPP_CONFIG
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/${AI_TARGET_PRODUCT}/robotapp.json)
+if(NOT EXISTS ${ROBOTAPP_CONFIG})
+    message(FATAL_ERROR "缺少产品 ${AI_TARGET_PRODUCT} 的 robotapp 配置: config/${AI_TARGET_PRODUCT}/robotapp.json")
+endif()
+install(FILES ${ROBOTAPP_CONFIG}
     DESTINATION etc/robotapp
 )
 

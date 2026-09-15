@@ -1,12 +1,12 @@
 {
   "robot": {
-    "type": "quadruped_wheeled",
-    "product": "demo",
-    "id": "demo-01"
+    "type": "humanoid",
+    "product": "lrs-x",
+    "id": "lrs-x-01"
   },
   "scenario": "nominal",
   "state_step_sec": 3.0,
-  "motor_count": 16,
+  "motor_count": 26,
   "topics": {
     "robot_state": {"name": "/robot/state", "hz": 20},
     "imu": {"name": "/imu/data", "hz": 100},
