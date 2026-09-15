@@ -12,8 +12,11 @@
  #   robotapp 不在本脚本内启动；需要 mock 数据时请另开终端执行 ./scripts/run_robotapp.sh
  #   前端 setupProxy 当前仅允许回环访问（见 src/setupProxy.js），故暂不提供 --lan。
  #
- # 退出清理：
- #   Ctrl+C / 后端退出时，会按进程组杀掉本次拉起的前端整棵树，
+ # 进程安全策略：
+ #   1. 只清理由本脚本创建、且经 /proc 验证（cwd/exe 属于本仓）的进程——
+ #      实例 PID 记录在 /tmp/roboview-dev-<仓路径哈希>.pids，异常退出后下次启动据此清理；
+ #   2. 端口 3000/8080 被其他程序占用时直接报错退出，不自动杀。
+ #   Ctrl+C / 后端退出时，按进程组杀掉本次拉起的前端整棵树，
  #   避免只杀 npm 外壳、react-scripts 子进程残留占用 3000。
 ###
 set -e
@@ -40,57 +43,88 @@ usage() {
     exit "${1:-0}"
 }
 
-# 按端口杀监听进程（清理历史残留）
-kill_port_listeners() {
+# 列出某端口的监听进程 PID（精确匹配本地端口，不误伤 :30001 之类）
+port_occupants() {
     local port="$1"
-    local pids
-    pids="$(ss -ltnp 2>/dev/null | awk -v p=":${port}" '
-        index($0, p) {
+    ss -ltnp 2>/dev/null | awk -v p=":${port}" '
+        $4 ~ p "$" {
             while (match($0, /pid=[0-9]+/)) {
                 print substr($0, RSTART + 4, RLENGTH - 4)
                 $0 = substr($0, RSTART + RLENGTH)
             }
         }
-    ' | sort -u)"
-    if [ -z "$pids" ]; then
-        return 0
-    fi
-    echo -e "${YELLOW}清理占用端口 ${port} 的进程: ${pids}${NC}"
-    # shellcheck disable=SC2086
-    kill -TERM $pids 2>/dev/null || true
-    sleep 0.4
-    for pid in $pids; do
-        if kill -0 "$pid" 2>/dev/null; then
-            kill -KILL "$pid" 2>/dev/null || true
-        fi
+    ' | sort -u
+}
+
+# 端口被占用时报错退出（不自动杀）；尽量列出占用者 pid 与命令行，交用户处理
+require_port_free() {
+    local port="$1"
+    ss -ltn 2>/dev/null | awk -v p=":${port}" '$4 ~ p "$" {found=1} END{exit !found}' || return 0
+    local pid
+    echo -e "${RED}错误: 端口 ${port} 已被占用${NC}" >&2
+    for pid in $(port_occupants "$port"); do
+        echo -e "${RED}  占用者: pid=${pid} $(ps -o args= -p "$pid" 2>/dev/null)${NC}" >&2
+    done
+    echo -e "${YELLOW}非本脚本创建的实例，请确认后自行处理（如 kill <pid>）${NC}" >&2
+    exit 1
+}
+
+# 按端口清理，但仅限 /proc 验证 cwd 属于指定目录的进程（本脚本创建的实例）
+kill_port_listeners_verified() {
+    local port="$1" cwd_prefix="$2"
+    local pid cwd
+    for pid in $(port_occupants "$port"); do
+        cwd="$(readlink -f "/proc/$pid/cwd" 2>/dev/null)"
+        case "$cwd" in
+            "${cwd_prefix}"*)
+                echo -e "${YELLOW}清理本实例端口 ${port} 残留: pid=${pid}${NC}"
+                kill -TERM "$pid" 2>/dev/null || true
+                ;;
+            *)
+                echo -e "${YELLOW}跳过端口 ${port} 的 pid=${pid}（cwd=${cwd:-?} 非本实例）${NC}"
+                ;;
+        esac
     done
 }
 
-# 杀掉本项目相关的旧前端/后端残留（启动前自愈）
+# 清理本脚本的既有实例：只认 PID 文件记录、且 /proc 身份可验证（cwd/exe 属于本仓）的进程
 cleanup_stale_instances() {
-    echo -e "${YELLOW}检查并清理残留的本项目进程...${NC}"
-
-    # 旧 start_dev / roboview 后端 / 本项目前端的 react-scripts
-    # 注意: 必须在管道外的 awk 里剔除本脚本自身及父进程——
-    # while 管道子 shell 中的 $$ 比较在部分环境下不可靠，曾导致误匹配自身
-    local stale
-    stale="$(pgrep -afi "roboview|roboview/frontend/node_modules/.*/react-scripts|scripts/start_dev\\.sh" 2>/dev/null \
-        | awk -v self="$$" -v parent="$PPID" '$1 != self && $1 != parent')"
-    if [ -n "$stale" ]; then
-        echo "$stale" | while read -r line; do
-            local pid
-            pid="$(echo "$line" | awk '{print $1}')"
-            [ -n "$pid" ] || continue
-            # pgrep 会匹配到命令替换子 shell（继承本脚本命令行），轮到 kill 时它已退出，直接跳过
-            kill -0 "$pid" 2>/dev/null || continue
-            echo -e "${YELLOW}终止残留: pid=${pid} ${line}${NC}"
-            kill -TERM "$pid" 2>/dev/null || true
-        done
-        sleep 0.5
-    fi
-
-    kill_port_listeners 3000
-    kill_port_listeners 8080
+    [ -f "$PID_FILE" ] || return 0
+    echo -e "${YELLOW}发现本脚本的实例记录（$PID_FILE），核验并清理...${NC}"
+    local role pid pgid
+    while read -r role pid pgid; do
+        [ -n "${pid:-}" ] || continue
+        case "$role" in
+            frontend)
+                # 进程组中任一成员 cwd 属于本仓前端目录，才认定为本脚本实例
+                local member cwd verified=""
+                for member in $(pgrep -g "${pgid:-0}" 2>/dev/null); do
+                    cwd="$(readlink -f "/proc/$member/cwd" 2>/dev/null)"
+                    case "$cwd" in
+                        "$REPO_DIR/roboview/frontend"*) verified=1; break ;;
+                    esac
+                done
+                if [ -n "$verified" ]; then
+                    echo -e "${YELLOW}终止既有前端实例: pgid=${pgid}${NC}"
+                    kill -TERM -- "-$pgid" 2>/dev/null || true
+                    sleep 0.4
+                    kill -KILL -- "-$pgid" 2>/dev/null || true
+                fi
+                ;;
+            backend)
+                if kill -0 "$pid" 2>/dev/null; then
+                    local exe
+                    exe="$(readlink -f "/proc/$pid/exe" 2>/dev/null)"
+                    if [ -n "$exe" ] && [ "$exe" = "$(readlink -f "$BACKEND_EXEC")" ]; then
+                        echo -e "${YELLOW}终止既有后端实例: pid=${pid}${NC}"
+                        kill -TERM "$pid" 2>/dev/null || true
+                    fi
+                fi
+                ;;
+        esac
+    done < "$PID_FILE"
+    rm -f "$PID_FILE"
+    sleep 0.5
 }
 
 # 退出时停止本次启动的前端进程组（以及可能仍占用端口的子进程）
@@ -112,11 +146,9 @@ cleanup() {
         wait "$FRONTEND_PID" 2>/dev/null || true
     fi
 
-    # 兜底：仅当本次脚本拉起过前端时，才按端口清 3000（避免 -h 等早退误杀别的实例）
+    # 兜底：仅当本次脚本拉起过前端时，才按端口清 3000，且仅限 cwd 属于本仓前端目录的进程
     if [ -n "$FRONTEND_PID" ] || [ -n "$FRONTEND_PGID" ]; then
-        if ss -ltn 2>/dev/null | awk '/:3000 /{found=1} END{exit !found}'; then
-            kill_port_listeners 3000
-        fi
+        kill_port_listeners_verified 3000 "$REPO_DIR/roboview/frontend"
     fi
 
     if [ -n "$BACKEND_PID" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
@@ -124,6 +156,9 @@ cleanup() {
         kill -TERM "$BACKEND_PID" 2>/dev/null || true
         wait "$BACKEND_PID" 2>/dev/null || true
     fi
+
+    # 实例记录随正常退出销毁
+    rm -f "$PID_FILE" 2>/dev/null || true
 
     exit "$ec"
 }
@@ -173,7 +208,7 @@ start_frontend() {
     mkdir -p "$public_urdf"
     cp -a "${asset_urdf}/." "$public_urdf/"
 
-    FRONTEND_LOG="${TMPDIR:-/tmp}/myroboview-frontend-$$.log"
+    FRONTEND_LOG="${TMPDIR:-/tmp}/roboview-frontend-$$.log"
     echo -e "${GREEN}后台启动前端: $frontend_dir (产品=${product}, 仅本机 HOST=127.0.0.1)${NC}"
 
     # setsid：独立会话/进程组，退出时 kill -- -pgid 只杀前端树，不会误伤本脚本
@@ -196,6 +231,9 @@ start_frontend() {
     FRONTEND_PID=$!
     # setsid 后该进程即为新会话/进程组 leader
     FRONTEND_PGID="$FRONTEND_PID"
+
+    # 登记实例：前端进程组（供异常退出后的下次启动核验清理）
+    echo "frontend $FRONTEND_PID $FRONTEND_PGID" > "$PID_FILE"
 
     echo -e "${BLUE}前端 pid=$FRONTEND_PID pgid=$FRONTEND_PGID  日志: $FRONTEND_LOG${NC}"
 }
@@ -228,6 +266,10 @@ trap cleanup EXIT INT TERM
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# 实例 PID 文件：按仓路径哈希区分多个检出，互不影响
+RUN_KEY="$(echo -n "$REPO_DIR" | md5sum | cut -c1-12)"
+PID_FILE="${TMPDIR:-/tmp}/roboview-dev-${RUN_KEY}.pids"
+
 # 定位外层构建工作区：开发仓的兄弟目录；从构建工作区内的源码副本运行时取上两级
 BUILD_ROOT=""
 for cand in "${BUILD_ALL_ROBOT_ROOT:-}" "$REPO_DIR/../build_all_robot" "$REPO_DIR/../.."; do
@@ -252,6 +294,9 @@ echo -e "${BLUE}  安装: ${INSTALL_DIR}${NC}"
 echo -e "${BLUE}========================================${NC}"
 
 cleanup_stale_instances
+# 端口被其他程序占用时默认报错，不自动杀
+require_port_free 3000
+require_port_free 8080
 
 if [ ! -f "$INSTALL_DIR/setup.bash" ]; then
     echo -e "${RED}错误: 未找到安装产物: $INSTALL_DIR${NC}"
@@ -307,4 +352,6 @@ fi
 # 不用 exec：后端退出或 Ctrl+C 时仍可走 trap，按进程组清理前端
 "$BACKEND_EXEC" --config "$BACKEND_CFG" &
 BACKEND_PID=$!
+# 登记实例：后端进程
+echo "backend $BACKEND_PID" >> "$PID_FILE"
 wait "$BACKEND_PID"
