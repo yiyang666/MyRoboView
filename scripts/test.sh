@@ -27,16 +27,17 @@ if [ "$LOCAL_BUILD" = "1" ]; then
   source "$install_dir/setup.bash"
   cd "$repo_dir"
   # --merge-install：与 build.sh --local 的构建布局保持一致
-  colcon test --merge-install --base-paths robotapp myroboview --packages-select robotapp myroboview_backend --event-handlers console_direct+
+  colcon test --merge-install --base-paths robotapp roboview --packages-select robotapp myroboview_backend --event-handlers console_direct+
   colcon test-result --verbose
   # 显式告知集成测试产物前缀（仓内单前缀布局）
-  MYROBOVIEW_INSTALL="$install_dir" PRODUCT="$PRODUCT" python3 "$repo_dir/myroboview/backend/integration_tests/integration.py"
+  MYROBOVIEW_INSTALL="$install_dir" PRODUCT="$PRODUCT" python3 "$repo_dir/roboview/backend/integration_tests/integration.py"
   exit 0
 fi
 
 build_root=""
-for cand in "$repo_dir/../build_all_robot" "$repo_dir/../../build_all_robot"; do
-  if [ -f "$cand/Makefile" ]; then build_root="$(cd "$cand" && pwd)"; break; fi
+# 候选：仓与体系同级（旧布局）/ 仓在体系 src/ 下（当前布局，祖父目录即体系根）
+for cand in "$repo_dir/../build_all_robot" "$repo_dir/../../build_all_robot" "$repo_dir/../.."; do
+  if [ -f "$cand/Makefile" ] && [ -d "$cand/repos" ]; then build_root="$(cd "$cand" && pwd)"; break; fi
 done
 if [ -z "$build_root" ]; then
   echo "错误: 未找到外层统一构建体系 build_all_robot（仓内测试请使用 --local）" >&2
@@ -60,4 +61,4 @@ colcon --log-base "$build_dir/log" test \
   --packages-select robotapp myroboview_backend --event-handlers console_direct+
 colcon --log-base "$build_dir/log" test-result --verbose --test-result-base "$build_dir/build"
 
-MYROBOVIEW_INSTALL="$build_dir/install" PRODUCT="$PRODUCT" python3 "$repo_dir/myroboview/backend/integration_tests/integration.py"
+MYROBOVIEW_INSTALL="$build_dir/install" PRODUCT="$PRODUCT" python3 "$repo_dir/roboview/backend/integration_tests/integration.py"

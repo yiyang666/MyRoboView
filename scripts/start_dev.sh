@@ -74,7 +74,7 @@ cleanup_stale_instances() {
     # 注意: 必须在管道外的 awk 里剔除本脚本自身及父进程——
     # while 管道子 shell 中的 $$ 比较在部分环境下不可靠，曾导致误匹配自身
     local stale
-    stale="$(pgrep -afi "myroboview_server|myroboview/frontend/node_modules/.*/react-scripts|scripts/start_dev\\.sh" 2>/dev/null \
+    stale="$(pgrep -afi "myroboview_server|roboview/frontend/node_modules/.*/react-scripts|scripts/start_dev\\.sh" 2>/dev/null \
         | awk -v self="$$" -v parent="$PPID" '$1 != self && $1 != parent')"
     if [ -n "$stale" ]; then
         echo "$stale" | while read -r line; do
@@ -281,7 +281,7 @@ fi
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-77}"
 export ROS_AUTOMATIC_DISCOVERY_RANGE="${ROS_AUTOMATIC_DISCOVERY_RANGE:-LOCALHOST}"
 
-start_frontend "$REPO_DIR/myroboview/frontend" "$ROBOVIEW_PRODUCT"
+start_frontend "$REPO_DIR/roboview/frontend" "$ROBOVIEW_PRODUCT"
 
 echo -e "${GREEN}启动后端: $BACKEND_EXEC --config $BACKEND_CFG${NC}"
 echo -e "${BLUE}本机页面: http://localhost:3000  API: http://localhost:8080/api/v1${NC}"

@@ -1,6 +1,5 @@
 # Local credentials; retain example configuration only.
-/backend/config/auth/
-/myroboview/backend/config/auth/
+/roboview/backend/config/auth/
 **/auth_users.json
 .env
 .env.*

@@ -24,7 +24,7 @@ if [ "$LOCAL_BUILD" = "1" ]; then
   source /opt/ros/jazzy/setup.bash
   cd "$repo_dir"
   colcon build --merge-install --symlink-install \
-    --base-paths robot_msgs/node_app_msgs robotapp myroboview \
+    --base-paths robot_msgs/node_app_msgs robotapp roboview \
     --event-handlers console_direct+ \
     --cmake-args -DAI_TARGET_PRODUCT="$PRODUCT" -DAI_TARGET_PLATFORM=x86_64 -DCMAKE_BUILD_TYPE=Release --no-warn-unused-cli
   exit 0
@@ -32,8 +32,9 @@ fi
 
 # 外层统一构建体系（开发态默认路径）：定位 build_all_robot 并编译其 src/ 中的源码
 build_root=""
-for cand in "$repo_dir/../build_all_robot" "$repo_dir/../../build_all_robot"; do
-  if [ -f "$cand/Makefile" ]; then build_root="$(cd "$cand" && pwd)"; break; fi
+# 候选：仓与体系同级（旧布局）/ 仓在体系 src/ 下（当前布局，祖父目录即体系根）
+for cand in "$repo_dir/../build_all_robot" "$repo_dir/../../build_all_robot" "$repo_dir/../.."; do
+  if [ -f "$cand/Makefile" ] && [ -d "$cand/repos" ]; then build_root="$(cd "$cand" && pwd)"; break; fi
 done
 if [ -z "$build_root" ]; then
   echo "错误: 未找到外层统一构建体系 build_all_robot（仓内构建请使用 --local）" >&2

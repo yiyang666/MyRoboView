@@ -7,9 +7,9 @@
 robotapp/                  独立 ROS2 C++ 模拟机器人进程
 robot_msgs/node_app_msgs/   自定义 ROS2 消息包
 robot_msgs/ros_msgs/        标准消息定义参考快照
-myroboview/                colcon 包（前后端同级，体系说明见 myroboview/README.md）
-myroboview/backend/        Drogon C++，订阅、缓存、WebSocket、导航模拟
-myroboview/frontend/       React 实时监控、电机健康卡片、2D 地图导航
+roboview/                  colcon 包（前后端同级，体系说明见 roboview/README.md）
+roboview/backend/          Drogon C++，订阅、缓存、WebSocket、导航模拟
+roboview/frontend/         React 实时监控、电机健康卡片、2D 地图导航
 scripts/                   保留构建、测试、启动入口
 ROS2/                      评估、方案、协议与验证文档
 ```

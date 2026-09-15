@@ -1,10 +1,11 @@
-# myroboview — 前后端一体包与开发/生产构建体系
+# roboview — 前后端一体包与开发/生产构建体系
 
-本目录是一个 colcon 包（包名 `myroboview_backend`），**包根就在本目录**（`CMakeLists.txt` + `package.xml`），
+本目录是一个 colcon 包（**目录名 `roboview`，包名仍为 `myroboview_backend`**，二进制为 `myroboview_server`），
+**包根就在本目录**（`CMakeLists.txt` + `package.xml`），
 前后端同级组织，保证"一次构建 = 前后端产物对齐"：
 
 ```
-myroboview/
+roboview/
 ├── CMakeLists.txt / package.xml   # colcon 包定义（包根，统一编排前后端安装规则）
 ├── backend/                       # Drogon C++ 后端
 │   ├── src/ include/              #   服务入口、REST API、WebSocket、ROS 订阅
