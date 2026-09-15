@@ -23,7 +23,8 @@ jobs:
           apt-get install -y build-essential cmake python3-colcon-common-extensions libdrogon-dev libjsoncpp-dev libpq-dev libmariadb-dev libsqlite3-dev libhiredis-dev libbrotli-dev ros-$ROS_DISTRO-rclpy ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-nav-msgs ros-$ROS_DISTRO-rosidl-default-generators ros-$ROS_DISTRO-rosidl-typesupport-introspection-cpp
       - name: Build C++ nodes and custom interfaces
         shell: bash
-        run: ./scripts/build.sh
+        # --local：CI 只验证单仓可编译，仓内独立构建，不依赖外层统一构建体系
+        run: ./scripts/build.sh --local
       - name: Unit and real DDS integration tests
         shell: bash
-        run: ./scripts/test.sh
+        run: ./scripts/test.sh --local
