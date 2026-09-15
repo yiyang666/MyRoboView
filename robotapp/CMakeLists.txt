@@ -1,26 +1,63 @@
 cmake_minimum_required(VERSION 3.16)
 project(robotapp)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(node_app_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
-add_executable(robotapp_node src/main.cpp)
-target_include_directories(robotapp_node PRIVATE include)
-ament_target_dependencies(robotapp_node rclcpp ament_index_cpp node_app_msgs sensor_msgs)
-target_link_libraries(robotapp_node jsoncpp_lib)
-target_compile_options(robotapp_node PRIVATE -Wall -Wextra -Wpedantic)
+
+add_executable(robotapp_node
+    src/main.cpp
+)
+target_include_directories(robotapp_node PRIVATE
+    include
+)
+ament_target_dependencies(robotapp_node
+    rclcpp
+    ament_index_cpp
+    node_app_msgs
+    sensor_msgs
+)
+target_link_libraries(robotapp_node
+    jsoncpp_lib
+)
+target_compile_options(robotapp_node PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
+
+# 单元测试
 if(BUILD_TESTING)
-  enable_testing()
-  add_executable(state_machine_test test/state_machine_test.cpp)
-  target_include_directories(state_machine_test PRIVATE include)
-  ament_target_dependencies(state_machine_test node_app_msgs)
-  add_test(NAME robotapp_state_machine COMMAND state_machine_test)
+    enable_testing()
+    add_executable(state_machine_test
+        test/state_machine_test.cpp
+    )
+    target_include_directories(state_machine_test PRIVATE
+        include
+    )
+    ament_target_dependencies(state_machine_test
+        node_app_msgs
+    )
+    add_test(NAME robotapp_state_machine
+        COMMAND state_machine_test
+    )
 endif()
-# 安装布局与原项目对齐：二进制进 bin/，配置进 etc/robotapp/
-install(TARGETS robotapp_node RUNTIME DESTINATION bin)
-install(DIRECTORY config/ DESTINATION etc/robotapp)
+
+# ------------------------------------------------------------
+# 安装规则
+# 布局与原项目对齐：二进制进 bin/，配置进 etc/robotapp/
+# ------------------------------------------------------------
+install(TARGETS robotapp_node
+    RUNTIME DESTINATION bin
+)
+install(DIRECTORY config/
+    DESTINATION etc/robotapp
+)
+
 ament_package()
