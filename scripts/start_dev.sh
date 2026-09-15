@@ -226,8 +226,10 @@ start_frontend() {
         export DANGEROUSLY_DISABLE_HOST_CHECK=true
         export WDS_ALLOWED_HOSTS=all
         export HOST=127.0.0.1
+        # 与生产构建同源：按产品差异化前端（电机状态卡片等，见 config/robotUrdfConfig.js）
+        export REACT_APP_PRODUCT=\"\$2\"
         exec npm start
-    " bash "$frontend_dir" >"$FRONTEND_LOG" 2>&1 &
+    " bash "$frontend_dir" "$product" >"$FRONTEND_LOG" 2>&1 &
     FRONTEND_PID=$!
     # setsid 后该进程即为新会话/进程组 leader
     FRONTEND_PGID="$FRONTEND_PID"

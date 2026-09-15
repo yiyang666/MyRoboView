@@ -95,11 +95,12 @@ add_custom_command(
         ${CMAKE_CURRENT_SOURCE_DIR}/frontend/package-lock.json
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend
 )
-# 构建层：CI=true 让 CRA 把 warning 当错误，保证入包代码干净
+# 构建层：CI=true 让 CRA 把 warning 当错误；REACT_APP_PRODUCT 注入当前产品（电机卡片等按产品差异化）
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/index.html
     COMMAND ${CMAKE_COMMAND} -E env
         CI=true
+        REACT_APP_PRODUCT=${AI_TARGET_PRODUCT}
         npm run build
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/.npm_stamp
