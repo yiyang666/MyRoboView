@@ -27,10 +27,7 @@ if [ "$LOCAL_BUILD" = "1" ]; then
   source "$install_dir/setup.bash"
   cd "$repo_dir"
   # --merge-install：与 build.sh --local 的构建布局保持一致
-  colcon test --merge-install --base-paths robotapp roboview --packages-select robotapp roboview --event-handlers console_direct+
-  colcon test-result --verbose
-  # 显式告知集成测试产物前缀（仓内单前缀布局）
-  MYROBOVIEW_INSTALL="$install_dir" PRODUCT="$PRODUCT" python3 "$repo_dir/roboview/backend/integration_tests/integration.py"
+  python3 "$repo_dir/integration_tests/run_suite.py" "$repo_dir" "$repo_dir/build" "$install_dir" "$PRODUCT"
   exit 0
 fi
 
@@ -55,10 +52,4 @@ source "$build_dir/install/setup.bash"
 
 # 与外层 Makefile 的 colcon 路径参数对齐（从 build_root 发起，指向产品构建目录）
 cd "$build_root"
-colcon --log-base "$build_dir/log" test \
-  --base-paths src --merge-install \
-  --build-base "$build_dir/build" --install-base "$build_dir/install" \
-  --packages-select robotapp roboview --event-handlers console_direct+
-colcon --log-base "$build_dir/log" test-result --verbose --test-result-base "$build_dir/build"
-
-MYROBOVIEW_INSTALL="$build_dir/install" PRODUCT="$PRODUCT" python3 "$repo_dir/roboview/backend/integration_tests/integration.py"
+python3 "$repo_dir/integration_tests/run_suite.py" "$build_root" "$build_dir/build" "$build_dir/install" "$PRODUCT"

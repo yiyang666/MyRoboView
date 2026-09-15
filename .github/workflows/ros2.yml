@@ -10,12 +10,19 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container: ros:jazzy-ros-base-noble
-    timeout-minutes: 15
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        product: [lrs-x, lrd-w]
     env:
       ROS_DISTRO: jazzy
       CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Install build dependencies
         shell: bash
         run: |
@@ -24,7 +31,16 @@ jobs:
       - name: Build C++ nodes and custom interfaces
         shell: bash
         # --local：CI 只验证单仓可编译，仓内独立构建，不依赖外层统一构建体系
-        run: ./scripts/build.sh --local
+        run: ./scripts/build.sh --local -p ${{ matrix.product }}
       - name: Unit and real DDS integration tests
         shell: bash
-        run: ./scripts/test.sh --local
+        run: ./scripts/test.sh --local -p ${{ matrix.product }}
+      - name: Archive verification reports and build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ matrix.product }}
+          path: |
+            test_reports/
+            log/
+          retention-days: 30

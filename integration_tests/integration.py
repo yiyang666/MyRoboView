@@ -17,7 +17,7 @@ import urllib.request
 import rclpy
 from node_app_msgs.msg import IotCmdMsg
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[1]
 PRODUCT = os.environ.get('PRODUCT', 'lrs-x')
 
 
@@ -171,6 +171,11 @@ def main():
             until(lambda state: all(t['state'] == 'waiting' for t in state['topics']))
             assert request('/api/v1/health')['framework'] == 'drogon'
             assert request('/api/v1/health')['robot_control'] is True
+            from artifacts import inspect_artifacts
+            artifact = inspect_artifacts(INSTALL_PREFIX, PRODUCT)
+            assert request('/').decode() == (INSTALL_PREFIX / 'etc/web/index.html').read_text()
+            for entry in artifact['entrypoints']:
+                assert request('/' + entry) == (INSTALL_PREFIX / 'etc/web' / entry).read_bytes()
             until(lambda _: observer.count_publishers('/iot/command') == 1)
             collect_commands(.5)
             assert request('/nav_maps/test_map01.png').startswith(b'\x89PNG')
@@ -230,6 +235,11 @@ def main():
             app = launch(APP, app_path)
             state = until(lambda s: all(t['state'] == 'live' and t['count'] >= 3 for t in s['topics']))
             data = state['topics'][0]['data']
+            assert state['robot']['product'] == PRODUCT
+            assert data['product'] == PRODUCT
+            assert data['robot_id'] == state['robot']['id'] == app_cfg['robot']['id']
+            assert data['robot_type'] == {'lrs-x': 0, 'lrd-w': 1}[PRODUCT]
+            assert state['robot']['type'] == app_cfg['robot']['type']
             assert 0 <= data['battery_percentage'] <= 100 and data['battery_voltage'] > 0
             motors = state['topics'][2]['data']['motors']
             assert len(motors) == app_cfg['motor_count'] and motors[0]['online_status'] == 0 and motors[1]['motor_direction'] == -1
