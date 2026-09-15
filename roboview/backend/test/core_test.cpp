@@ -1,6 +1,6 @@
-#include "myroboview/core.hpp"
-#include "myroboview/introspection.hpp"
-#include "myroboview/navigation.hpp"
+#include "roboview/core.hpp"
+#include "roboview/introspection.hpp"
+#include "roboview/navigation.hpp"
 #include <node_app_msgs/msg/robot_state.hpp>
 #include <node_app_msgs/msg/motor_health_array.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -15,12 +15,12 @@ Json::Value decode(const std::string &type, const T &message) {
     rclcpp::SerializedMessage wire;
     rclcpp::Serialization<T> serializer;
     serializer.serialize_message(&message, &wire);
-    return myroboview::Decoder(type).decode(wire);
+    return roboview::Decoder(type).decode(wire);
 }
 int main(int argc, char **argv) {
     try {
         check(argc == 3, "config and fixture required");
-        auto cfg = myroboview::load_config(argv[1]);
+        auto cfg = roboview::load_config(argv[1]);
         for (int fault = 0; fault < 8; ++fault) {
             auto bad = cfg;
             if (fault == 0) bad["topics"][1]["id"] = bad["topics"][0]["id"];
@@ -33,14 +33,14 @@ int main(int argc, char **argv) {
             if (fault == 7) bad["topics"][0]["topic"] = "/bad//topic";
             bool rejected = false;
             try {
-                myroboview::validate_config(bad);
+                roboview::validate_config(bad);
             } catch (...) {
                 rejected = true;
             }
             check(rejected, "invalid config accepted");
         }
-        myroboview::StateStore store(cfg);
-        auto start = myroboview::Clock::now();
+        roboview::StateStore store(cfg);
+        auto start = roboview::Clock::now();
         check(store.snapshot(start)["topics"][0]["state"] == "waiting",
               "initial state");
         store.update("robot_state", Json::Value(1), start);
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
         check(i["angular_velocity"]["z"].isNull() &&
                   i["orientation_covariance"].size() == 9,
               "standard ROS conversion");
-        myroboview::Navigation nav(argv[2], 1.);
+        roboview::Navigation nav(argv[2], 1.);
         Json::Value body;
         body["route_id"] = "route-demo-testMap01";
         nav.start(body);
@@ -109,11 +109,11 @@ int main(int argc, char **argv) {
         bool rejected = false;
         try {
             nav.delete_waypoint("wp-start");
-        } catch (const myroboview::NavError &e) {
+        } catch (const roboview::NavError &e) {
             rejected = e.code == 409;
         }
         check(rejected, "referenced point protected");
-        myroboview::Navigation failing_nav(
+        roboview::Navigation failing_nav(
             argv[2], 1., [](const auto &, const auto &, const auto &) {
                 throw std::runtime_error("publisher failed");
             });

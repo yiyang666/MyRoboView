@@ -1,19 +1,19 @@
-#include "myroboview/core.hpp"
-#include "myroboview/api.hpp"
-#include "myroboview/ros_subscriber.hpp"
-#include "myroboview/command_publisher.hpp"
-#include "myroboview/websocket.hpp"
+#include "roboview/core.hpp"
+#include "roboview/api.hpp"
+#include "roboview/ros_subscriber.hpp"
+#include "roboview/command_publisher.hpp"
+#include "roboview/websocket.hpp"
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <iostream>
 #include <thread>
 
 int main(int argc, char **argv) {
-    using namespace myroboview;
+    using namespace roboview;
     try {
         const auto cfg = load_config(config_path(argc, argv));
         // 安装前缀（install/）：etc/ 下为配置与前端静态页，布局与原项目对齐
         const auto prefix =
-            ament_index_cpp::get_package_prefix("myroboview_backend");
+            ament_index_cpp::get_package_prefix("roboview");
         rclcpp::init(0, nullptr);
         auto store = std::make_shared<StateStore>(cfg);
         auto node = std::make_shared<RosSubscriber>(cfg, store);
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
         if (web_error) std::rethrow_exception(web_error);
         return 0;
     } catch (const std::exception &e) {
-        std::cerr << "myroboview_backend: " << e.what() << std::endl;
+        std::cerr << "roboview: " << e.what() << std::endl;
         if (rclcpp::ok()) rclcpp::shutdown();
         return 1;
     }

@@ -1,4 +1,4 @@
-#include "myroboview/core.hpp"
+#include "roboview/core.hpp"
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <cmath>
 #include <fstream>
@@ -6,7 +6,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace myroboview {
+namespace roboview {
 std::string encode(const Json::Value &value) {
     Json::StreamWriterBuilder writer;
     writer["indentation"] = "";
@@ -131,9 +131,9 @@ rclcpp::QoS qos(const Json::Value &spec) {
 }
 std::string config_path(int argc, char **argv) {
     if (argc == 1)
-        return ament_index_cpp::get_package_prefix("myroboview_backend") +
+        return ament_index_cpp::get_package_prefix("roboview") +
                "/etc/web_config/myroboview.json";
     if (argc == 3 && std::string(argv[1]) == "--config") return argv[2];
-    throw std::invalid_argument("Usage: myroboview_server [--config PATH]");
+    throw std::invalid_argument("Usage: roboview [--config PATH]");
 }
-}  // namespace myroboview
+}  // namespace roboview

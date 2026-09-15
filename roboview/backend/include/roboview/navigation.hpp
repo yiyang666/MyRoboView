@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 
-namespace myroboview {
+namespace roboview {
 struct NavError : std::runtime_error {
     int code;
     NavError(int code, const std::string &message)
@@ -57,4 +57,4 @@ class Navigation {
     bool mapping_ = false;
     std::string mapping_name_;
 };
-}  // namespace myroboview
+}  // namespace roboview

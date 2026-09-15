@@ -1,6 +1,6 @@
 # roboview — 前后端一体包与开发/生产构建体系
 
-本目录是一个 colcon 包（**目录名 `roboview`，包名仍为 `myroboview_backend`**，二进制为 `myroboview_server`），
+本目录是一个 colcon 包，**目录名、包名、二进制名统一为 `roboview`**，
 **包根就在本目录**（`CMakeLists.txt` + `package.xml`），
 前后端同级组织，保证"一次构建 = 前后端产物对齐"：
 
@@ -29,7 +29,7 @@ roboview/
 
 1. 把 `frontend/asserts/<产品>/robot_urdf` 同步到 `frontend/public/robot_urdf`（CRA 静态托管，gitignore）
 2. 后台启动 CRA dev server（webpack 内存编译，**不产生磁盘产物**）
-3. 前台启动后端 `myroboview_server`
+3. 前台启动后端 `roboview`
 
 前后端关联：`frontend/src/setupProxy.js` 把 `/api`、`/api/v1/telemetry`(WS)、`/nav_maps`
 代理到 `127.0.0.1:8080`，浏览器访问 **:3000** 即可联调。
@@ -40,7 +40,7 @@ roboview/
 frontend/  --npm run build-->  frontend/build/  --┐
                                                   ├--CMake 安装规则-->  install/etc/web/
 asserts/${AI_TARGET_PRODUCT}/  -------------------┘   （页面 + 当前产品的 robot_urdf）
-backend/   --colcon build-->   install/bin/myroboview_server
+backend/   --colcon build-->   install/bin/roboview
                                install/etc/web_config/  （配置 + 导航数据）
 ```
 

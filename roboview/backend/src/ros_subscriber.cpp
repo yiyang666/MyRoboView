@@ -1,9 +1,9 @@
-#include "myroboview/ros_subscriber.hpp"
-#include "myroboview/introspection.hpp"
-namespace myroboview {
+#include "roboview/ros_subscriber.hpp"
+#include "roboview/introspection.hpp"
+namespace roboview {
 RosSubscriber::RosSubscriber(const Json::Value &config,
                              std::shared_ptr<StateStore> store)
-    : Node("myroboview_server") {
+    : Node("roboview_server") {
     for (const auto &spec : config["topics"]) {
         const auto id = spec["id"].asString();
         auto decoder = std::make_shared<Decoder>(spec["type"].asString());
@@ -19,4 +19,4 @@ RosSubscriber::RosSubscriber(const Json::Value &config,
             }));
     }
 }
-}  // namespace myroboview
+}  // namespace roboview

@@ -1,5 +1,5 @@
-#include "myroboview/websocket.hpp"
-namespace myroboview {
+#include "roboview/websocket.hpp"
+namespace roboview {
 void BroadcastHub::add(const drogon::WebSocketConnectionPtr &connection) {
     std::lock_guard<std::mutex> lock(mutex_);
     clients_.insert(connection);
@@ -37,4 +37,4 @@ void TelemetrySocket::handleNewMessage(
             "{\"type\":\"error\",\"message\":\"Telemetry socket is server-push "
             "only; use demo navigation HTTP endpoints\"}");
 }
-}  // namespace myroboview
+}  // namespace roboview

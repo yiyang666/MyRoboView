@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
-# 包根位于 myroboview/（前后端同级，与原项目对齐），一次构建内完成前后端产物对齐
-project(myroboview_backend)
+# 包根位于 roboview/（前后端同级，与原项目对齐），一次构建内完成前后端产物对齐
+project(roboview)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(ament_cmake REQUIRED)
@@ -13,10 +13,10 @@ add_library(backend_core backend/src/config.cpp backend/src/state.cpp backend/sr
 target_include_directories(backend_core PUBLIC backend/include)
 ament_target_dependencies(backend_core rclcpp ament_index_cpp rosidl_typesupport_introspection_cpp)
 target_link_libraries(backend_core Drogon::Drogon)
-add_executable(myroboview_server backend/src/main.cpp backend/src/ros_subscriber.cpp backend/src/command_publisher.cpp backend/src/api.cpp backend/src/websocket.cpp)
-ament_target_dependencies(myroboview_server rclcpp ament_index_cpp node_app_msgs)
-target_link_libraries(myroboview_server backend_core)
-foreach(target backend_core myroboview_server)
+add_executable(roboview backend/src/main.cpp backend/src/ros_subscriber.cpp backend/src/command_publisher.cpp backend/src/api.cpp backend/src/websocket.cpp)
+ament_target_dependencies(roboview rclcpp ament_index_cpp node_app_msgs)
+target_link_libraries(roboview backend_core)
+foreach(target backend_core roboview)
   target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
 endforeach()
 if(BUILD_TESTING)
@@ -29,7 +29,7 @@ if(BUILD_TESTING)
   add_test(NAME core_test COMMAND core_test ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/myroboview.json ${CMAKE_CURRENT_SOURCE_DIR}/backend/assets/navigation.json)
 endif()
 # 安装布局与原项目对齐：二进制进 bin/，配置与导航数据进 etc/web_config/，前端静态页进 etc/web/
-install(TARGETS myroboview_server RUNTIME DESTINATION bin)
+install(TARGETS roboview RUNTIME DESTINATION bin)
 # auth 认证暂未启用，不进安装包
 install(DIRECTORY backend/config/ DESTINATION etc/web_config PATTERN "auth" EXCLUDE)
 install(FILES backend/assets/navigation.json DESTINATION etc/web_config)

@@ -1,9 +1,9 @@
 #pragma once
-#include "myroboview/core.hpp"
+#include "roboview/core.hpp"
 #include <drogon/WebSocketController.h>
 #include <set>
 
-namespace myroboview {
+namespace roboview {
 class BroadcastHub {
  public:
     void add(const drogon::WebSocketConnectionPtr &connection);
@@ -35,4 +35,4 @@ class TelemetrySocket
     std::shared_ptr<BroadcastHub> hub_;
     std::shared_ptr<StateStore> store_;
 };
-}  // namespace myroboview
+}  // namespace roboview

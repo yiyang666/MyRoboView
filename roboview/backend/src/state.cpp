@@ -1,7 +1,7 @@
-#include "myroboview/core.hpp"
+#include "roboview/core.hpp"
 #include <cmath>
 
-namespace myroboview {
+namespace roboview {
 StateStore::StateStore(Json::Value config) : config_(std::move(config)) {
     for (const auto &t : config_["topics"])
         entries_.emplace(t["id"].asString(), Entry{});
@@ -88,4 +88,4 @@ std::vector<Json::Value> StateStore::due_frames(Clock::time_point now) {
     }
     return frames;
 }
-}  // namespace myroboview
+}  // namespace roboview

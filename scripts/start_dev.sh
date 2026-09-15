@@ -70,11 +70,11 @@ kill_port_listeners() {
 cleanup_stale_instances() {
     echo -e "${YELLOW}检查并清理残留的本项目进程...${NC}"
 
-    # 旧 start_dev / myroboview_server 后端 / 本项目前端的 react-scripts
+    # 旧 start_dev / roboview 后端 / 本项目前端的 react-scripts
     # 注意: 必须在管道外的 awk 里剔除本脚本自身及父进程——
     # while 管道子 shell 中的 $$ 比较在部分环境下不可靠，曾导致误匹配自身
     local stale
-    stale="$(pgrep -afi "myroboview_server|roboview/frontend/node_modules/.*/react-scripts|scripts/start_dev\\.sh" 2>/dev/null \
+    stale="$(pgrep -afi "roboview|roboview/frontend/node_modules/.*/react-scripts|scripts/start_dev\\.sh" 2>/dev/null \
         | awk -v self="$$" -v parent="$PPID" '$1 != self && $1 != parent')"
     if [ -n "$stale" ]; then
         echo "$stale" | while read -r line; do
@@ -242,7 +242,7 @@ if [ -z "$BUILD_ROOT" ]; then
 fi
 
 INSTALL_DIR="$BUILD_ROOT/build/${ROBOVIEW_PRODUCT}/x86_64/install"
-BACKEND_EXEC="$INSTALL_DIR/bin/myroboview_server"
+BACKEND_EXEC="$INSTALL_DIR/bin/roboview"
 BACKEND_CFG="$INSTALL_DIR/etc/web_config/myroboview.json"
 
 echo -e "${BLUE}========================================${NC}"

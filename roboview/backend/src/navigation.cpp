@@ -1,4 +1,4 @@
-#include "myroboview/navigation.hpp"
+#include "roboview/navigation.hpp"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -6,7 +6,7 @@
 #include <sstream>
 #include <locale>
 
-namespace myroboview {
+namespace roboview {
 namespace {
 Json::Value ok() {
     Json::Value v;
@@ -308,4 +308,4 @@ void Navigation::tick(double seconds) {
     }
     if (index_ == path_.size()) status_ = "SUCCEEDED";
 }
-}  // namespace myroboview
+}  // namespace roboview

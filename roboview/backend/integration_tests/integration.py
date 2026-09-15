@@ -32,7 +32,7 @@ def find_install_prefix() -> Path:
 # 产物前缀：优先取环境变量（scripts/test.sh 按构建模式显式传入），否则自动探测外层统一构建体系
 INSTALL_PREFIX = Path(os.environ['MYROBOVIEW_INSTALL']) if os.environ.get('MYROBOVIEW_INSTALL') else find_install_prefix()
 APP = INSTALL_PREFIX / 'bin/robotapp_node'
-BACKEND = INSTALL_PREFIX / 'bin/myroboview_server'
+BACKEND = INSTALL_PREFIX / 'bin/roboview'
 
 
 class WebSocket:

@@ -4,7 +4,7 @@
 #include <rclcpp/typesupport_helpers.hpp>
 #include <rosidl_typesupport_introspection_cpp/message_introspection.hpp>
 
-namespace myroboview {
+namespace roboview {
 // Libraries outlive their metadata and each temporary deserialized message.
 class Decoder {
  public:
@@ -17,4 +17,4 @@ class Decoder {
     const rosidl_typesupport_introspection_cpp::MessageMembers *members_;
     std::unique_ptr<rclcpp::SerializationBase> serializer_;
 };
-}  // namespace myroboview
+}  // namespace roboview

@@ -1,12 +1,12 @@
-#include "myroboview/introspection.hpp"
-#include "myroboview/core.hpp"
+#include "roboview/introspection.hpp"
+#include "roboview/core.hpp"
 #include <rosidl_typesupport_introspection_cpp/field_types.hpp>
 #include <cmath>
 #include <codecvt>
 #include <locale>
 #include <stdexcept>
 
-namespace myroboview {
+namespace roboview {
 namespace {
 using namespace rosidl_typesupport_introspection_cpp;
 Json::Value object(const MessageMembers *members, const void *data,
@@ -139,4 +139,4 @@ Json::Value Decoder::decode(const rclcpp::SerializedMessage &message) const {
         throw std::runtime_error("JSON exceeds 128 KiB");
     return result;
 }
-}  // namespace myroboview
+}  // namespace roboview

@@ -29,7 +29,7 @@ if [[ $# -ne 0 ]]; then
 fi
 "$install_dir/bin/robotapp_node" --config "${ROBOTAPP_CONFIG:-$install_dir/etc/robotapp/robotapp.json}" &
 robot_pid=$!
-"$install_dir/bin/myroboview_server" --config "${MYROBOVIEW_CONFIG:-$install_dir/etc/web_config/myroboview.json}" &
+"$install_dir/bin/roboview" --config "${MYROBOVIEW_CONFIG:-$install_dir/etc/web_config/myroboview.json}" &
 backend_pid=$!
 cleanup() {
   trap - EXIT INT TERM

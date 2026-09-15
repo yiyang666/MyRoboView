@@ -17,7 +17,7 @@ ROS2/                      评估、方案、协议与验证文档
 数据链路：`robotapp → ROS2 DDS → backend → WebSocket /ws → frontend`。
 两个进程各自读取配置，backend 不启动或依赖 robotapp；真实机器人接入时只启动 backend。
 地图导航按钮由 backend 发布 `/iot/command`（`node_app_msgs/msg/IotCmdMsg`），导航任务同时在 backend 内模拟。资源健康、日志模块不在本阶段范围。
-后端程序为 `myroboview_server`：`main.cpp` 负责启动和退出，`ros_subscriber.cpp` 负责接收话题，`command_publisher.cpp` 负责下发命令。
+后端程序为 `roboview`：`main.cpp` 负责启动和退出，`ros_subscriber.cpp` 负责接收话题，`command_publisher.cpp` 负责下发命令。
 
 ## 本机手动验证
 

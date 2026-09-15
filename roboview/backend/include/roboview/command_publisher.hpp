@@ -1,7 +1,7 @@
 #pragma once
 #include <rclcpp/rclcpp.hpp>
 #include <node_app_msgs/msg/iot_cmd_msg.hpp>
-namespace myroboview {
+namespace roboview {
 class CommandPublisher {
  public:
     explicit CommandPublisher(rclcpp::Node &node);
@@ -12,4 +12,4 @@ class CommandPublisher {
  private:
     rclcpp::Publisher<node_app_msgs::msg::IotCmdMsg>::SharedPtr publisher_;
 };
-}  // namespace myroboview
+}  // namespace roboview

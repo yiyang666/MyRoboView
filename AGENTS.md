@@ -7,7 +7,7 @@
 - 前端在 roboview/frontend，复用原 React 组件，不顺带升级工具链。
 - 配置分别在 robotapp/config 和 roboview/backend/config。
 - 不引入 LYOS SDK、业务动作或标定；资源健康、日志本阶段不做。
-- 后端入口 main.cpp，订阅在 ros_subscriber.cpp，发布在 command_publisher.cpp；程序名 myroboview_server。
+- 后端入口 main.cpp，订阅在 ros_subscriber.cpp，发布在 command_publisher.cpp；程序名 roboview。
 - 导航按钮经后端发布 /iot/command（node_app_msgs/msg/IotCmdMsg），任务同时驱动内存导航模拟。遵循 ROS2/CONTRACTS.md 的原版参数格式。默认回环监听。
 - 前端本轮包含电机健康卡片与原版 2D 地图导航，不加入 3D 动态展示；用户保留的 assert 资源不可清理。
 - 真实 app 接入仅启动 backend，不同时启动发布同名话题的 robotapp。

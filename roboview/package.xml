@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>myroboview_backend</name><version>0.2.0</version>
+  <name>roboview</name><version>0.2.0</version>
   <description>Drogon ROS2 subscriber, rate-limited WebSocket telemetry and navigation demo.</description>
   <maintainer email="yiyang666@users.noreply.github.com">yiyang666</maintainer>
   <license>Proprietary</license>

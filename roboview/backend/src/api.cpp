@@ -1,9 +1,9 @@
-#include "myroboview/api.hpp"
+#include "roboview/api.hpp"
 #include <drogon/drogon.h>
 #include <fstream>
 #include <sstream>
 
-namespace myroboview {
+namespace roboview {
 namespace {
 using Callback = std::function<void(const drogon::HttpResponsePtr &)>;
 Json::Value body(const drogon::HttpRequestPtr &req) {
@@ -168,4 +168,4 @@ void register_api(std::shared_ptr<StateStore> store,
                         },
                         {drogon::Post});
 }
-}  // namespace myroboview
+}  // namespace roboview

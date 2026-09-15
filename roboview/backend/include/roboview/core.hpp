@@ -7,7 +7,7 @@
 #include <mutex>
 #include <string>
 
-namespace myroboview {
+namespace roboview {
 using Clock = std::chrono::steady_clock;
 std::string encode(const Json::Value &value);
 Json::Value load_config(const std::string &path);
@@ -35,4 +35,4 @@ class StateStore {
     mutable std::mutex mutex_;
     std::map<std::string, Entry> entries_;
 };
-}  // namespace myroboview
+}  // namespace roboview
