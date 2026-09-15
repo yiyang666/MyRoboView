@@ -14,5 +14,5 @@
 - 验证使用 ./scripts/build.sh、./scripts/test.sh；前端构建 CI=true npm run build --prefix roboview/frontend。
 - 测试完成必须关闭自己启动的前端、后端和 robotapp，核实端口释放，让用户自行启动；不遗留后台服务。
 - 不清理用户未跟踪文件、缓存和旧构建产物。遵守 .gitignore。
-- 由于本项目有大文件且进入了.gitignore, 所以不允许使用外层的make clean（清空src）操作，会导致未跟踪的大文件丢失。
+- 外层的make clean 相关指令只会清空 build/ 目录。
 - 路线与范围见 ROS2/ROADMAP.md、ASSESSMENT.md、REFACTOR.md；没有实机证据不能标记部署完成。
