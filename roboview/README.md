@@ -10,7 +10,7 @@ roboview/
 ├── backend/                       # Drogon C++ 后端
 │   ├── src/ include/              #   服务入口、REST API、WebSocket、ROS 订阅
 │   ├── config/ assets/            #   运行配置、导航数据、地图
-│   └── test/ integration_tests/   #   单元测试、集成测试
+│   └── test/                     #   核心单元测试；系统集成测试位于仓根 integration_tests/
 └── frontend/                      # React 前端（CRA）
     ├── src/ public/               #   源码与静态资源
     ├── asserts/<产品>/robot_urdf/ #   按产品划分的 URDF 资源（前后端对齐的关键）

@@ -29,7 +29,7 @@
 电机健康：motor_count + motors 数组（≤64），元素字段 motor_id、health_status（0正常/1警告/2错误）、online_status（0在线/1离线）、motor_direction（1正向/-1反向）、motor_temperature（°C）、motor_voltage（V）、motor_position_zero_rad（rad）。精确定义见 `robot_msgs/node_app_msgs/msg`。
 IMU 使用标准 sensor_msgs/Imu。robotapp 正常状态按 READY/空闲 → MOTION/行走 → MOTION/差异化动作（人形挥手、四足轮式奔跑）→ MOTION/暂停 四拍循环（state_step_sec 每拍），fault 场景整机 DISABLED/FAULT 并注入电机离线/警告/高温。
 
-发布设置在 `robotapp/config/<PRODUCT>/robotapp.json`；订阅、QoS、广播频率、过期阈值在 `myroboview/backend/config/myroboview.json`。修改话题时两端各自配置一致。
+发布设置在 `robotapp/config/<PRODUCT>/robotapp.json`；订阅、QoS、广播频率、过期阈值在 `roboview/backend/config/<PRODUCT>/myroboview.json`。修改话题时两端各自配置一致。
 
 ## HTTP / WebSocket
 
@@ -46,7 +46,7 @@ POST `/api/v1/nav/maps/load`、`/api/v1/nav/waypoints`、`/api/v1/nav/routes`。
 DELETE `/api/v1/nav/waypoints/{id}`、`/api/v1/nav/routes/{id}`。
 POST `/api/v1/nav/tasks/route/start`、`pause`、`resume`、`stop`（后三者同路径前缀）。
 
-具体请求字段与完整可执行示例见 `myroboview/backend/integration_tests/integration.py`。无效参数 400、不存在 404、状态冲突 409。WS nav_state 默认 5 Hz，位姿沿预置路线移动。地图和路线编辑仅存在内存中；navigation.enabled=false 时导航接口不可用。
+具体请求字段与完整可执行示例见 [系统集成测试](../integration_tests/integration.py)。无效参数 400、不存在 404、状态冲突 409。WS nav_state 默认 5 Hz，位姿沿预置路线移动。地图和路线编辑仅存在内存中；navigation.enabled=false 时导航接口不可用。
 
 ## 下行指令
 
