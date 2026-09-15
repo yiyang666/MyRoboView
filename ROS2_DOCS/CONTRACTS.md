@@ -6,13 +6,13 @@
 |---|---|---|---:|---:|
 | 机器人状态 | node_app_msgs/msg/RobotState | /robot/state | 20 | 5 |
 | IMU | sensor_msgs/msg/Imu | /imu/data | 100 | 10 |
-| 电机健康 | node_app_msgs/msg/MotorHealthArray | /motors/health | 10 | 2 |
+| 电机健康 | node_app_msgs/msg/MotorHealth | /motors/health | 10 | 2 |
 
-机器人状态：current_mode、current_action、running_status（0空闲/1运行/2暂停/3故障）、motor_status（0正常/1警告/2错误）、battery_percentage（0–100%）、battery_voltage（V）。
-电机数组：motor_id、name、online、direction（1正向/-1反向）、temperature_celsius（摄氏度）、bus_voltage（V）、position_zero_rad（rad）。精确定义见 `robot_msgs/node_app_msgs/msg`。
-IMU 使用标准 sensor_msgs/Imu。robotapp 正常状态按 STANDBY/HOLD → AUTO/WALK → AUTO/TURN → AUTO/HOLD 循环，fault 场景覆盖为故障。
+机器人状态：robot_type（0人形/1四足轮式）、product、robot_id 随帧携带用于产品/个体区分；current_mode（0禁用/1准备/2运控）、current_action（0空闲/1跳跃/2行走/3奔跑/4转身/5挥手）、running_status（0空闲/1运行/2暂停/3故障）、motor_overall_status（0正常/1警告/2错误）、battery_temperature（°C）、battery_percentage（0–100%）、battery_voltage（V）。
+电机健康：motor_count + motors 数组（≤64），元素字段 motor_id、health_status（0正常/1警告/2错误）、online_status（0在线/1离线）、motor_direction（1正向/-1反向）、motor_temperature（°C）、motor_voltage（V）、motor_position_zero_rad（rad）。精确定义见 `robot_msgs/node_app_msgs/msg`。
+IMU 使用标准 sensor_msgs/Imu。robotapp 正常状态按 READY/空闲 → MOTION/行走 → MOTION/差异化动作（人形挥手、四足轮式奔跑）→ MOTION/暂停 四拍循环（state_step_sec 每拍），fault 场景整机 DISABLED/FAULT 并注入电机离线/警告/高温。
 
-发布设置在 `robotapp/config/robotapp.json`；订阅、QoS、广播频率、过期阈值在 `myroboview/backend/config/myroboview.json`。修改话题时两端各自配置一致。
+发布设置在 `robotapp/config/<PRODUCT>/robotapp.json`；订阅、QoS、广播频率、过期阈值在 `myroboview/backend/config/myroboview.json`。修改话题时两端各自配置一致。
 
 ## HTTP / WebSocket
 
