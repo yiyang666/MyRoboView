@@ -1,4 +1,4 @@
-# Robot application state, contract v1. Battery percentage is 0..100.
+# Robot application state, contract v2 (node_app_msgs 0.3.0). Battery percentage is 0..100.
 std_msgs/Header header
 
 # 机器人类型：0-小人形，1-四足轮式

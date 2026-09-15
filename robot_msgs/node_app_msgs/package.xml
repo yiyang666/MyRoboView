@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>node_app_msgs</name><version>0.2.0</version>
+  <name>node_app_msgs</name><version>0.3.0</version>
   <description>Robot application state and motor health contracts.</description>
   <maintainer email="yiyang666@users.noreply.github.com">yiyang666</maintainer>
   <license>Proprietary</license>
