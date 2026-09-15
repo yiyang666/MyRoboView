@@ -18,8 +18,21 @@ import rclpy
 from node_app_msgs.msg import IotCmdMsg
 
 ROOT = Path(__file__).resolve().parents[3]
-APP = ROOT / 'install/robotapp/lib/robotapp/robotapp_node'
-BACKEND = ROOT / 'install/myroboview_backend/lib/myroboview_backend/myroboview_server'
+PRODUCT = os.environ.get('PRODUCT', 'lrs-x')
+
+
+def find_install_prefix() -> Path:
+    # 统一构建产物在外层 build_all_robot；兼容从开发仓或构建工作区源码副本运行
+    for cand in (ROOT.parent / 'build_all_robot', ROOT.parent.parent):
+        if (cand / 'Makefile').is_file() and (cand / 'repos').is_dir():
+            return cand / 'build' / PRODUCT / 'x86_64' / 'install'
+    raise SystemExit('未找到外层构建工作区 build_all_robot，请先执行 ./scripts/build.sh')
+
+
+# 产物前缀：优先取环境变量（scripts/test.sh 按构建模式显式传入），否则自动探测外层统一构建体系
+INSTALL_PREFIX = Path(os.environ['MYROBOVIEW_INSTALL']) if os.environ.get('MYROBOVIEW_INSTALL') else find_install_prefix()
+APP = INSTALL_PREFIX / 'bin/robotapp_node'
+BACKEND = INSTALL_PREFIX / 'bin/myroboview_server'
 
 
 class WebSocket:
