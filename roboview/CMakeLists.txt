@@ -76,7 +76,8 @@ if(BUILD_TESTING)
     add_test(NAME core_test
         COMMAND core_test
             ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/${AI_TARGET_PRODUCT}/myroboview.json
-            ${CMAKE_CURRENT_SOURCE_DIR}/backend/assets/navigation.json
+            # 导航夹具随目录重构迁到 config/<产品>/ 下（原 backend/assets/navigation.json 已不存在）
+            ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/${AI_TARGET_PRODUCT}/navigation.json
     )
 endif()
 
