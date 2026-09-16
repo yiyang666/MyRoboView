@@ -32,8 +32,8 @@ ROS 接收与网络发送分线程，缓存和客户端集合有锁保护。广�
 
 - `AI_TARGET_PRODUCT` 同源驱动 robotapp 配置、后端配置和 `REACT_APP_PRODUCT`，Vite 输出到 `frontend/build/<产品>`。
 - 生产文档根为 `install/etc/web`：Vite 页面与 hash 文件位于根目录和 `static/`，地图位于 `assets/maps/`，当前产品 URDF 位于 `assets/robot_urdf/`。
-- 安装时排除 Vite 从开发态 `public/robot_urdf` 复制出的资源，再从 `asserts/<产品>` 安装当前产品资源。
-- 当前增量安装只清理 `static/`，尚未清理 CRA 时代的顶层文件和旧资源路径；认证配置也缺少干净检出环境的安全注入方案。两项均以 P1 记录在 [OPTIMIZED.md](OPTIMIZED.md)。
+- 安装时排除 Vite 从开发态 `public/assets/robot_urdf` 复制出的资源，再从 `asserts/<产品>` 安装当前产品资源。
+- 认证仅入库 `auth_users.example.json`（真实凭据仍 ignore，登录未启用）；安装前整目录清空 `etc/web` 再按原顺序重生。详见 [OPTIMIZED.md](OPTIMIZED.md) DONE-15/16/17。
 
 ## 未完成事项
 

@@ -28,7 +28,7 @@ roboview/
 
 `start_dev.sh` 做三件事：
 
-1. 把 `frontend/asserts/<产品>/robot_urdf` 同步到 `frontend/public/robot_urdf`（Vite 静态托管，gitignore）
+1. 把 `frontend/asserts/<产品>/robot_urdf` 同步到 `frontend/public/assets/robot_urdf`（与生产 URL `/assets/robot_urdf` 对齐；gitignore）
 2. 后台启动 Vite dev server（按需编译，**不产生磁盘产物**）
 3. 前台启动后端 `roboview`
 
@@ -72,13 +72,13 @@ npm 脚本（`frontend/package.json`）：
 build/<产品>/
 ├── index.html                      # 入口页（含产品 meta）
 ├── static/                         # assetsDir：哈希 js/css
-└── favicon.ico / manifest.json / robot_urdf/ ...   # public/ 原样拷贝
+└── favicon.ico / manifest.json / assets/robot_urdf/ ...   # public/ 原样拷贝（安装时排除 robot_urdf）
 ```
 
-`assetsDir: 'static'` 是有意对齐历史布局：CMake 安装规则把 `etc/web/static/` 视为
-**构建独占目录**整目录清理后重装，与 `etc/web/assets/`（URDF、地图等后端资源）互不干扰。
-`build/<产品>/robot_urdf/` 来自开发态 public 同步、**产品不确定**，
-安装时被排除，改由 `asserts/${AI_TARGET_PRODUCT}/` 规则补装正确产品的资源。
+`assetsDir: 'static'` 让 hash 资源落在 `etc/web/static/`，与 `etc/web/assets/`（URDF、地图）分区。
+安装前会**整目录清空 `etc/web`** 再按原顺序装入地图 → 前端产物 → asserts，避免 CRA 旧布局 / 异产品资源残留。
+`build/<产品>/` 里可能含开发态同步的 `assets/robot_urdf/`（产品不确定），
+安装时按 `PATTERN "robot_urdf" EXCLUDE` 排除，再由 `asserts/${AI_TARGET_PRODUCT}/` 补装正确产品的资源。
 
 ### CMake 编排（正常构建无需手工 npm）
 

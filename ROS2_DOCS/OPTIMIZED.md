@@ -4,12 +4,9 @@
 
 | ID | 优先级 | 模块 | 问题与触发条件 | 评审时间 / 版本 | 状态与验收条件 |
 |---|---|---|---|---|---|
-| BUG-04 | P1 | 构建 / CI | CMake 把 `backend/config/auth/*.json` 设为必需输入并安装，但该目录及 `auth_users.json` 被 Git 忽略；本机因存在私有文件可构建，干净检出和当前 CI 没有生成/注入步骤，将在配置期失败 | 2026-09-16 / Demo 1.0 | 不提交真实凭据；明确选择“未启用认证时可选”或由部署/CI 从模板安全生成，并用干净检出验证双产品构建 |
-| BUG-05 | P1 | 安装 / 产品隔离 | 增量安装只清理 `etc/web/static`。实物中仍可见 CRA 的 `asset-manifest.json`、旧 `/robot_urdf` 和旧 `assets/test_map01.png`；切换产品或从旧版升级时会留下异产品/废弃资源 | 2026-09-16 / Demo 1.0 | 为前端部署面定义受控清单并清理已废弃路径；双产品交替安装后断言整个 `etc/web` 的允许集合及异产品资源不存在 |
-| BUG-01 | P2 | 前端构建 | 开发态 `public/robot_urdf` 仍会被 Vite 原样复制进另一产品的原始 build；最终安装虽排除该目录并重装当前产品资源，但源码构建产物仍可能受污染 | 2026-09-15 / Demo 1.0 | 隔离开发资源，使原始双产品 build 不再包含异产品 URDF |
-| BUG-02 | P2 | npm 缓存 | 独立产品 stamp 共用 node_modules，并发首次构建可能互相 npm ci；删除 node_modules 后 stamp 仍存在 | 2026-09-15 / Demo 1.0 | 当前串行构建；需依赖目录校验及安装互斥或独立工作目录 |
+| BUG-01 | P2 | 前端构建 | 开发态 `public/assets/robot_urdf` 仍会被 Vite 原样复制进另一产品的原始 build；最终安装虽排除该目录并重装当前产品资源，但源码构建产物仍可能受污染 | 2026-09-15 / Demo 1.0 | 隔离开发资源，使原始双产品 build 不再包含异产品 URDF |
+| BUG-02 | P2 | npm 缓存 | 独立产品 stamp 共用 node_modules，并发首次构建可能互相 npm ci；删除 node_modules 后 stamp 仍存在 | 2026-09-15 / Demo 1.0 | 当前串行构建，暂不处理；若外层并行构建再加依赖目录校验/互斥或独立工作目录 |
 | BUG-03 | P2 | 身份处理 | 同名 DDS 话题上的异产品/个体消息未在运行时拒绝；测试验证的是正确组合 | 2026-09-15 / Demo 1.0 | 增加运行时告警/隔离及负例；MotorHealth 本身没有身份字段 |
-| BUG-06 | P2 | 前端资源契约 | 两产品配置仍使用 `/robot_urdf/...`，生产安装路径已改为 `/assets/robot_urdf/...`；当前未挂载 3D viewer，恢复 URDF 加载时会 404 | 2026-09-16 / Demo 1.0 | 统一开发/生产 URL 或增加明确映射，并用 HTTP 测试请求配置中的 URDF 与 mesh |
 
 ## 当前项目可优化
 
@@ -43,6 +40,9 @@
 | DONE-12 | 文档 | README 数量、路径和结构过期 | 背景、双产品表、架构与时序、启动、报告、链接全部整理 | 09-15 / 本轮 |
 | DONE-13 | 前端工具链 | CRA 依赖重、构建慢且代理分散 | 迁移到 Vite 6，入口与 JSX 后缀规范化，代理、产品注入和按产品输出收敛到 `vite.config.js`；锁文件和未使用依赖显著精简 | 09-16 / Demo 1.0 |
 | DONE-14 | 安装布局 | 地图、URDF 与前端 hash 产物边界不清 | 地图收敛到 `etc/web/assets/maps`，当前产品 URDF 收敛到 `etc/web/assets/robot_urdf`，Vite hash 资源独占 `etc/web/static` | 09-16 / Demo 1.0 |
+| DONE-15 | 构建 / CI | auth JSON 被 ignore 却为构建必需 | 取消对 `config/auth/` 目录的 ignore；入库 `auth_users.example.json`（真实 `auth_users.json` 仍 ignore）；CMake 校验并正常安装 example；登录未启用、后端暂不引用 | 09-16 / 本轮 |
+| DONE-16 | 安装 / 产品隔离 | 增量安装只清 `static`，旧布局与异产品资源残留 | 安装前整目录清空 `etc/web`，再按原顺序安装地图 → 前端产物 → asserts；暂不扩展升级安装 allowlist 测试 | 09-16 / 本轮 |
+| DONE-17 | 前端资源契约 | URDF 配置 URL 与生产路径不一致 | 两产品 `robotUrdfConfig` 与 `start_dev.sh` 同步路径统一为 `/assets/robot_urdf/`；当前仍未挂载 3D viewer | 09-16 / 本轮 |
 
 新增问题先进入前两节；验收通过后移入历史表，保留 ID、方法及验证证据。
-提交时间与二进制 mtime 不能单独证明产物过期；应结合增量构建、完整安装清单、文件比对与测试报告判断。当前双产品测试通过并不关闭 BUG-05，因为现有检查只严格比较 `static/` 子树。
+提交时间与二进制 mtime 不能单独证明产物过期；应结合增量构建、完整安装清单、文件比对与测试报告判断。
