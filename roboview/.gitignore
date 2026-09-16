@@ -1,0 +1,16 @@
+# roboview 包（前后端一体）本地生成物 —— 规则相对本目录
+# 仓级 colcon / 集成测试 / 密钥等见 ../../.gitignore
+
+# --- 前端（Vite）---
+frontend/node_modules/
+frontend/build/
+frontend/.vite/
+
+# 大体积 URDF/mesh 输入（按产品分目录；构建时由 asserts 规则安装）
+frontend/asserts/
+
+# 开发态 start_dev.sh 从 asserts 同步到 public 的副本（对齐 /assets/robot_urdf）
+frontend/public/assets/
+
+# --- 后端 ---
+# 源码树无本地生成目录；C++ 产物在外层 build_all_robot/build/ 或仓内 install/

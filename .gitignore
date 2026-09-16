@@ -1,16 +1,26 @@
-# Local credentials; retain example configuration only.
+# myroboview 仓级 —— 多包共用、集成测试、本地 colcon（--local）等
+# roboview 前后端包内规则见 roboview/.gitignore
+
+# 凭据（仅提交 auth_users.example.json）
 **/auth_users.json
+
+# 环境变量
 .env
 .env.*
 !.env.example
-node_modules/
+
+# 仓内独立构建（./scripts/build.sh --local）
 build/
 install/
 log/
+
+# 集成测试与 Python 工具
+test_reports/
 __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
 *.egg-info/
+
+# 杂项
 .DS_Store
-test_reports/
