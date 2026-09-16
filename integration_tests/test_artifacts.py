@@ -21,10 +21,11 @@ class ArtifactChecks(unittest.TestCase):
             write(prefix / 'etc/robotapp/robotapp.json', json.dumps({'robot': identity, 'motor_count': 26}))
             web = prefix / 'etc/web'
             source = root / 'roboview/frontend/build/lrs-x'
+            # 夹具对齐 Vite 产物形态：产品 meta + 入口脚本引用（不再有 asset-manifest.json）
+            index = '<meta name="roboview-product" content="lrs-x"><script type="module" src="/static/js/main.js"></script>'
             for folder in (web, source):
-                write(folder / 'index.html', '<meta name="roboview-product" content="lrs-x">')
+                write(folder / 'index.html', index)
                 write(folder / 'static/js/main.js', 'test')
-                write(folder / 'asset-manifest.json', json.dumps({'entrypoints': ['static/js/main.js']}))
             with patch.object(artifacts, 'ROOT', root):
                 self.assertFalse(artifacts.inspect_artifacts(prefix, 'lrs-x')['urdf_checked'])
                 stale = web / 'static/js/old.js'
@@ -32,6 +33,11 @@ class ArtifactChecks(unittest.TestCase):
                 with self.assertRaisesRegex(AssertionError, 'stale'):
                     artifacts.inspect_artifacts(prefix, 'lrs-x')
                 stale.unlink()
+                # 负例：index.html 引用了不存在的静态资源
+                write(web / 'index.html', '<meta name="roboview-product" content="lrs-x"><script src="/static/js/missing.js"></script>')
+                with self.assertRaisesRegex(AssertionError, 'missing.js'):
+                    artifacts.inspect_artifacts(prefix, 'lrs-x')
+                write(web / 'index.html', index)
                 write(backend, json.dumps({'robot': {**identity, 'id': 'wrong'}}))
                 with self.assertRaisesRegex(AssertionError, 'identity'):
                     artifacts.inspect_artifacts(prefix, 'lrs-x')
