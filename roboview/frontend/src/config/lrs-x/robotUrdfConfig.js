@@ -15,7 +15,8 @@ export const URDF_CONFIG = {
   displayName: '小人形机器人',
 
   // URDF 静态资源路径（扁平）：开发态拷贝到 public/robot_urdf/；
-  // 安装态由 CMake 将 assets/<product>/robot_urdf 装到 etc/web/robot_urdf/
+  // 安装态由 CMake 将 asserts/<产品>/robot_urdf 装到 etc/web/assets/robot_urdf/
+  // 注意：当前未挂载 3D viewer，本路径仅作配置备查
   urdfPath: '/robot_urdf/LRS-X2URDF.urdf',
 
   // package:// 前缀到静态资源目录的映射（与 URDF 内 package 名一致）

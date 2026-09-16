@@ -14,7 +14,8 @@ export const URDF_CONFIG = {
   id: 'lrd-w-01',
   displayName: '四足轮式机器人',
 
-  // 沿用原版静态加载路径约定。原始资源保存在 frontend/assert/lrd-w/robot_urdf。
+  // 沿用原版静态加载路径约定。原始资源保存在 frontend/asserts/lrd-w/robot_urdf，
+  // 安装态位于 etc/web/assets/robot_urdf/。
   // 当前仅使用关节名称映射，不复制 meshes、不请求 URDF、不挂载 3D viewer。
   urdfPath: '/robot_urdf/LRD_W01.urdf',
 

@@ -4,7 +4,8 @@
  * 通过环境变量选择产品（与后端 AI_TARGET_PRODUCT / Makefile PRODUCT 对齐）：
  *   REACT_APP_PRODUCT=lrs-x|lrd-w
  *
- * Create React App 会在编译期把 REACT_APP_* 打进包。
+ * Vite 通过 envPrefix: 'REACT_APP_'（见 frontend/vite.config.js）
+ * 在编译期把 REACT_APP_* 静态替换进包。
  * 未设置时默认 lrs-x。
  *
  * 业务代码请统一：
@@ -18,7 +19,8 @@ const PRODUCT_CONFIGS = {
   'lrd-w': LRD_W_CONFIG,
 };
 
-const product = (process.env.REACT_APP_PRODUCT || 'lrs-x').trim();
+// Vite 构建期静态替换（浏览器侧无 process.env，须用 import.meta.env）
+const product = (import.meta.env.REACT_APP_PRODUCT || 'lrs-x').trim();
 const selected = PRODUCT_CONFIGS[product];
 
 if (!selected) {
