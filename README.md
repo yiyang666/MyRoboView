@@ -110,7 +110,7 @@ cd /home/ethan/MyRobot/build_all_robot/src/myroboview
 
 打开 http://127.0.0.1:3000；健康入口 http://127.0.0.1:8080/api/v1/health。
 Ctrl+C 退出各自启动进程。LRS-X 后端与 MOCK 联调也可使用 `./scripts/run_demo.sh`。
-安装后的后端在 8080 托管生产页面，无需 CRA 开发服务器。
+安装后的后端在 8080 托管生产页面，无需前端开发服务器（Vite 仅承担构建与开发态，见 [前后端构建说明](roboview/README.md)）。
 
 安装布局：`bin/roboview`、`bin/robotapp_node`、`etc/web_config/`、`etc/robotapp/`、`etc/web/`。
 后端默认回环监听；启动脚本默认 ROS domain 77 / LOCALHOST，可由环境覆盖。

@@ -10,14 +10,16 @@ roboview/
 ├── backend/                       # Drogon C++ 后端
 │   ├── src/ include/              #   服务入口、REST API、WebSocket、ROS 订阅
 │   ├── config/ assets/            #   运行配置、导航数据、地图
-│   └── test/                     #   核心单元测试；系统集成测试位于仓根 integration_tests/
-└── frontend/                      # React 前端（CRA）
-    ├── src/ public/               #   源码与静态资源
-    ├── asserts/<产品>/robot_urdf/ #   按产品划分的 URDF 资源（前后端对齐的关键）
-    └── build/<产品>/              #   npm 生产产物（gitignore，按产品分目录防互相覆盖）
+│   └── test/                      #   核心单元测试；系统集成测试位于仓根 integration_tests/
+└── frontend/                      # React 前端（Vite 6 构建）
+    ├── index.html                 #   Vite 入口页（位于包根；%REACT_APP_PRODUCT% 构建期替换）
+    ├── vite.config.js             #   唯一构建配置：dev 代理 / 产品注入 / 产物布局
+    ├── src/ public/               #   源码（含 JSX 的文件用 .jsx 后缀）与静态资源
+    ├── asserts/<产品>/robot_urdf/ #   按产品划分的 URDF 资源（前后端对齐的关键，gitignore）
+    └── build/<产品>/              #   生产产物（gitignore，按产品分目录防互相覆盖）
 ```
 
-## 开发态（日常调试，仅 x86_64）
+## 开发态（日常调试，仅 x86_64， 默认产品lrs-x）
 
 ```bash
 ./scripts/run_robotapp.sh   # 终端1：单独启动 robotapp mock（数据源）
@@ -26,12 +28,87 @@ roboview/
 
 `start_dev.sh` 做三件事：
 
-1. 把 `frontend/asserts/<产品>/robot_urdf` 同步到 `frontend/public/robot_urdf`（CRA 静态托管，gitignore）
-2. 后台启动 CRA dev server（webpack 内存编译，**不产生磁盘产物**）
+1. 把 `frontend/asserts/<产品>/robot_urdf` 同步到 `frontend/public/robot_urdf`（Vite 静态托管，gitignore）
+2. 后台启动 Vite dev server（按需编译，**不产生磁盘产物**）
 3. 前台启动后端 `roboview`
 
-前后端关联：`frontend/src/setupProxy.js` 把 `/api`、`/api/v1/telemetry`(WS)、`/nav_maps`
-代理到 `127.0.0.1:8080`，浏览器访问 **:3000** 即可联调。
+前后端关联：`frontend/vite.config.js` 的 `server.proxy` 把 `/api`、`/api/v1/telemetry`(WS)、
+`/nav_maps` 代理到 `127.0.0.1:8080`，浏览器访问 **:3000** 即可联调。
+dev server 仅监听回环地址，且对非本机 Host 头返回 403（防 DNS 重绑定），故仅本机可访问。
+
+## 前端构建体系（Vite）
+
+### 工具链版本
+
+| 项 | 版本 | 说明 |
+| --- | --- | --- |
+| Node.js | ^18 / ^20 / >=22 | `package.json` engines 约束 |
+| Vite | ^6 | dev server + 生产构建（esbuild 编译，全量构建 <1s） |
+| @vitejs/plugin-react | ^4 | JSX 转换与 Fast Refresh |
+
+npm 脚本（`frontend/package.json`）：
+
+| 命令 | 用途 |
+| --- | --- |
+| `npm start` / `npm run dev` | 启动 dev server（:3000，通常由 `start_dev.sh` 调用，不手工执行） |
+| `npm run build` | 生产构建到 `build/<产品>/`（产品由 `REACT_APP_PRODUCT` 决定） |
+| `npm run preview` | 本地预览构建产物（不含后端代理，仅排查静态页用） |
+
+### 产品注入链路（REACT_APP_PRODUCT）
+
+产品标识全链路同名：外层 `Makefile PRODUCT` → `AI_TARGET_PRODUCT`（后端 CMake）
+→ `REACT_APP_PRODUCT`（前端）。保留 `REACT_APP_` 历史前缀仅为接口稳定，与 CRA 无关。
+
+- **注入**：CMake 构建层与 `start_dev.sh` 都导出 `REACT_APP_PRODUCT=<产品>`；
+  `vite.config.js` 用 `envPrefix: 'REACT_APP_'` 把它暴露给源码，并据此决定输出目录；
+- **源码读取**：`import.meta.env.REACT_APP_PRODUCT` —— 浏览器侧没有 `process.env`，
+  Vite 在构建期做**静态替换**（见 `src/config/robotUrdfConfig.js`，按产品选中关节映射等差异化配置）；
+- **入口页**：`index.html` 中 `%REACT_APP_PRODUCT%` 同样被替换（产物 meta 标签，便于溯源）；
+- 未设置时默认 `lrs-x`（与 CMake 默认值一致）。
+
+### 产物布局与安装映射
+
+```
+build/<产品>/
+├── index.html                      # 入口页（含产品 meta）
+├── static/                         # assetsDir：哈希 js/css
+└── favicon.ico / manifest.json / robot_urdf/ ...   # public/ 原样拷贝
+```
+
+`assetsDir: 'static'` 是有意对齐历史布局：CMake 安装规则把 `etc/web/static/` 视为
+**构建独占目录**整目录清理后重装，与 `etc/web/assets/`（URDF、地图等后端资源）互不干扰。
+`build/<产品>/robot_urdf/` 来自开发态 public 同步、**产品不确定**，
+安装时被排除，改由 `asserts/${AI_TARGET_PRODUCT}/` 规则补装正确产品的资源。
+
+### CMake 编排（正常构建无需手工 npm）
+
+`colcon build`（或外层 `make <产品>_<平台>`）时自动完成：
+
+1. **依赖层**：`frontend/package.json` 或 `package-lock.json` 变化 → `npm ci`（严格按锁安装）；
+   stamp 记录在构建目录，不污染源码树；
+2. **构建层**：`src/`、`public/`、`index.html`、`vite.config.js` 任一变化 →
+   `REACT_APP_PRODUCT=<产品> npm run build`；CI 全新工作区必然全量构建。
+
+构建机需具备 node/npm（新机器可跑外层 `make install_all_dependencies`）。
+
+### 手工构建（仅调试时需要）
+
+```bash
+cd roboview/frontend
+npm ci                                    # 严格按锁装依赖
+REACT_APP_PRODUCT=lrd-w npm run build     # 产出 build/lrd-w/
+```
+
+### 与 CRA 时代的行为差异（2026-09 迁移注意项）
+
+- **ESLint 不再随构建执行**（Vite 不做规范/类型检查），源码质量走编辑器与评审把关；
+- **无前端单元测试**：原 CRA 内置的 Jest 从未使用，已连同 `@testing-library/*` 移除；
+  需要时引入 Vitest（jsdom 环境 + `@testing-library/react`）；
+- **未使用依赖已移除**：`three`、`@react-three/fiber`、`@react-three/drei`、
+  `three-mesh-bvh`、`urdf-loader`（源码仅做关节名映射、未挂载 3D viewer）、
+  `react-router-dom`（页面为状态切换、无路由）、`web-vitals`、`http-proxy-middleware`
+  （代理已由 vite.config.js 内建）。恢复 3D 展示或路由时按需加回；
+- JSX 文件必须使用 `.jsx` 后缀（Vite 约定，`.js` 不再按 JSX 解析）。
 
 ## 生产态（安装包 / 部署）
 
@@ -45,16 +122,12 @@ backend/   --colcon build-->   install/bin/roboview
 
 关键规则（见 `CMakeLists.txt` install 段）：
 
-- 后端配置按产品拆分在 `backend/config/<产品>/myroboview.json`，**只安装当前产品那一份**
+- 后端配置按产品拆分在 `backend/config/<产品>/`，**只安装当前产品那一份**
   （configure 期校验存在性，缺失直接报错）；
 - 前端产物 `frontend/build/` 安装时**排除 `robot_urdf`**，再由 `asserts/${AI_TARGET_PRODUCT}/`
-  补入——无论前端 build 时 `public/` 里放的是哪个产品的资源，**装进包的 URDF 一定与构建产品一致**；
+  补入——无论构建时 `public/` 里放的是哪个产品的资源，**装进包的 URDF 一定与构建产品一致**；
 - `AI_TARGET_PRODUCT` 由外层统一构建体系按产品传入（仓内直编时默认 `lrs-x`），
-  同时以 `REACT_APP_PRODUCT` 注入前端构建——`frontend/src/config/robotUrdfConfig.js`
-  在编译期选中对应产品配置（电机状态卡片等差异化显示）；开发态由 `start_dev.sh` 同源注入；
-- 前端构建由 CMake 随 `colcon build` 自动编排：`package-lock.json` 变化才 `npm ci`（严格按锁安装），
-  前端源码变化才 `npm run build`，CI 全新工作区必然全量构建——无需手工执行 npm 命令；
-  构建机需具备 node/npm（新机器可跑外层 `make install_all_dependencies`）；
+  同时以 `REACT_APP_PRODUCT` 注入前端构建；开发态由 `start_dev.sh` 同源注入；
 - 部署时后端直接托管页面：`main.cpp` 将 Drogon 的 document root 设为 `<安装前缀>/etc/web`，
   浏览器访问 **:8080** 即是完整系统（无需单独前端服务器）。
 
