@@ -26,5 +26,5 @@ yarn-error.log*
 # 原始 URDF / STL 源文件（构建输入，体积大）
 /asserts/
 
-# 开发态从 assets 拷贝到 public，勿提交
-/public/robot_urdf/
+# 开发态从 asserts 同步到 public，勿提交（与生产 /assets/robot_urdf 对齐）
+/public/assets/

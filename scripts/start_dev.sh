@@ -180,9 +180,10 @@ wait_for_http() {
 start_frontend() {
     local frontend_dir="$1"
     local product="$2"
-    # URDF 资源按产品组织在 asserts/<产品>/robot_urdf，开发态拷到 public 供 Vite 静态托管
+    # URDF 按产品在 asserts/<产品>/robot_urdf；开发态同步到 public/assets/robot_urdf，
+    # 与生产安装路径 /assets/robot_urdf 对齐（见 robotUrdfConfig.js）
     local asset_urdf="${frontend_dir}/asserts/${product}/robot_urdf"
-    local public_urdf="${frontend_dir}/public/robot_urdf"
+    local public_urdf="${frontend_dir}/public/assets/robot_urdf"
 
     if [ ! -d "$frontend_dir" ]; then
         echo -e "${RED}错误: 前端目录不存在: $frontend_dir${NC}"
@@ -203,8 +204,9 @@ start_frontend() {
         echo -e "${RED}错误: 找不到产品 URDF 资源: $asset_urdf${NC}"
         exit 1
     fi
-    echo -e "${GREEN}同步 URDF 到 public: ${product}${NC}"
-    rm -rf "$public_urdf"
+    echo -e "${GREEN}同步 URDF 到 public/assets: ${product}${NC}"
+    # 清理旧开发态路径，避免与 /assets/robot_urdf 并存造成混淆
+    rm -rf "${frontend_dir}/public/robot_urdf" "$public_urdf"
     mkdir -p "$public_urdf"
     cp -a "${asset_urdf}/." "$public_urdf/"
 
