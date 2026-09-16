@@ -21,3 +21,13 @@
 - 未进行 3D 展示、真实机器人命令执行或 Orin NX 实机测试。建图为指令与状态模拟，不生成 SLAM 地图。
 
 上一版 GitHub CI 因发行版 Drogon 的 CMake 依赖缺少 PostgreSQL 开发库而失败；本轮 CI 补充数据库与 Brotli 链接依赖，与本机既有依赖环境分开验证。
+
+## Vite 与新安装布局评审（2026-09-16）
+
+评审基线为 `9fe77b58a849`。本机依次执行两产品完整测试：
+
+- `./scripts/test.sh -p lrs-x`：全部通过；持久报告 `test_reports/lrs-x/20260916T133933.096251Z/`。
+- `./scripts/test.sh -p lrd-w`：全部通过；持久报告 `test_reports/lrd-w/20260916T133944.980666Z/`。
+- 覆盖单元测试结果、产物负例、产品/身份一致性、Vite 入口资源、真实 DDS + HTTP + WebSocket，并生成 JUnit、元数据和阶段日志。
+
+上述通过结论只证明当前测试声明的范围。实物审计另发现：旧 LRS-X 安装前缀仍有 CRA 和旧资源路径残留，而检查器只对 `static/` 做完整集合比较；干净 Git 检出也缺少 CMake 强制要求的私有认证 JSON。因此尚不能声明“旧版原地升级目录干净”或“当前 CI 可从零构建”。详见 [问题跟踪](OPTIMIZED.md) 与本轮代码评审。
