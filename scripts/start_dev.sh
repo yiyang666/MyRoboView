@@ -10,14 +10,14 @@
  #
  # 说明:
  #   robotapp 不在本脚本内启动；需要 mock 数据时请另开终端执行 ./scripts/run_robotapp.sh
- #   前端 setupProxy 当前仅允许回环访问（见 src/setupProxy.js），故暂不提供 --lan。
+ #   前端 dev server 当前仅允许回环访问（见 frontend/vite.config.js 的 Host 校验），故暂不提供 --lan。
  #
  # 进程安全策略：
  #   1. 只清理由本脚本创建、且经 /proc 验证（cwd/exe 属于本仓）的进程——
  #      实例 PID 记录在 /tmp/roboview-dev-<仓路径哈希>.pids，异常退出后下次启动据此清理；
  #   2. 端口 3000/8080 被其他程序占用时直接报错退出，不自动杀。
  #   Ctrl+C / 后端退出时，按进程组杀掉本次拉起的前端整棵树，
- #   避免只杀 npm 外壳、react-scripts 子进程残留占用 3000。
+ #   避免只杀 npm 外壳、vite 子进程残留占用 3000。
 ###
 set -e
 GREEN='\033[0;32m'
@@ -136,7 +136,7 @@ cleanup() {
 
     if [ -n "$FRONTEND_PGID" ] && [ "$FRONTEND_PGID" != "$self_pgid" ]; then
         echo -e "\n${YELLOW}停止前端进程组 (pgid $FRONTEND_PGID)...${NC}"
-        # 负号 = 按进程组杀整棵树（npm + react-scripts + webpack）
+        # 负号 = 按进程组杀整棵树（npm + vite）
         kill -TERM -- "-$FRONTEND_PGID" 2>/dev/null || true
         sleep 0.4
         kill -KILL -- "-$FRONTEND_PGID" 2>/dev/null || true
@@ -180,7 +180,7 @@ wait_for_http() {
 start_frontend() {
     local frontend_dir="$1"
     local product="$2"
-    # URDF 资源按产品组织在 asserts/<产品>/robot_urdf，开发态拷到 public 供 CRA 静态托管
+    # URDF 资源按产品组织在 asserts/<产品>/robot_urdf，开发态拷到 public 供 Vite 静态托管
     local asset_urdf="${frontend_dir}/asserts/${product}/robot_urdf"
     local public_urdf="${frontend_dir}/public/robot_urdf"
 
@@ -212,19 +212,14 @@ start_frontend() {
     echo -e "${GREEN}后台启动前端: $frontend_dir (产品=${product}, 仅本机 HOST=127.0.0.1)${NC}"
 
     # setsid：独立会话/进程组，退出时 kill -- -pgid 只杀前端树，不会误伤本脚本
-    # BROWSER=none：禁止 CRA 自己弹窗；后面由脚本在就绪后统一打开，避免“后台重定向导致不弹窗”
-    # 有 package.json proxy 时 CRA 用 [lanUrl] 填 allowedHosts；
-    # HOST=127.0.0.1 时 lanUrl 为空会直接崩：allowedHosts[0] should be a non-empty string。
-    # 因此关掉 Host 防火墙；仅本机访问由 setupProxy.js 的回环校验兜底。
+    # Vite 默认不自动弹窗；由脚本在前端就绪后统一打开浏览器（见下方 OPEN_BROWSER）
+    # HOST=127.0.0.1：vite.config.js 读取，仅监听回环；另有 Host 头校验兜底（防 DNS 重绑定）
     if ! command -v setsid >/dev/null 2>&1; then
         echo -e "${RED}错误: 未找到 setsid，无法隔离前端进程组${NC}"
         exit 1
     fi
     setsid bash -c "
         cd \"\$1\" || exit 1
-        export BROWSER=none
-        export DANGEROUSLY_DISABLE_HOST_CHECK=true
-        export WDS_ALLOWED_HOSTS=all
         export HOST=127.0.0.1
         # 与生产构建同源：按产品差异化前端（电机状态卡片等，见 config/robotUrdfConfig.js）
         export REACT_APP_PRODUCT=\"\$2\"
@@ -335,7 +330,7 @@ echo -e "${BLUE}本机页面: http://localhost:3000  API: http://localhost:8080/
 echo -e "${YELLOW}前端日志见: $FRONTEND_LOG${NC}"
 echo ""
 
-# 前端就绪后主动打开页面（解决后台启动 + 日志重定向时 CRA 不弹窗）
+    # 前端就绪后主动打开页面（Vite 后台启动不弹窗，由脚本统一打开）
 if [ "$OPEN_BROWSER" = "1" ]; then
     (
         if wait_for_http "http://127.0.0.1:3000" 90; then
