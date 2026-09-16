@@ -60,7 +60,7 @@ void register_api(std::shared_ptr<StateStore> store,
     for (const auto &asset :
          std::vector<std::tuple<std::string, std::string, std::string>>{
              {"/", "index.html", "text/html; charset=utf-8"},
-             {"/nav_maps/test_map01.png", "assets/test_map01.png",
+             {"/nav_maps/test_map01.png", "assets/maps/test_map01.png",
               "image/png"}}) {
         std::ifstream f(web_root + "/" + std::get<1>(asset), std::ios::binary);
         if (!f) throw std::runtime_error("Missing bundled asset");
