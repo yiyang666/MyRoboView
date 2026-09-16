@@ -117,14 +117,15 @@ add_custom_target(frontend_build ALL
 
 # ------------------------------------------------------------
 # 安装规则
+# 按产品（${AI_TARGET_PRODUCT}）拆分，只安装当前产品那一份
 # 布局与原项目对齐：二进制进 bin/，配置文件进 etc/web_config/，前后端静态页和资源进 etc/web/
 # ------------------------------------------------------------
 install(TARGETS roboview
     RUNTIME DESTINATION bin
 )
 
-# 后端配置按产品拆分（backend/config/<产品>/），只安装当前产品那一份
-## 第一步：configure 期校验存在性，避免安装期才失败，安装目标路径为：配置文件进 etc/web_config/ 、资源文件进 etc/web/assets/
+# 项目配置文件 → etc/web_config/
+## 第一步：configure 期校验存在性，避免安装期才失败
 set(BACKEND_CONFIG_DIR
     ${CMAKE_CURRENT_SOURCE_DIR}/backend/config/${AI_TARGET_PRODUCT})
 set(BACKEND_AUTH_DIR
@@ -143,30 +144,28 @@ install(FILES
     ${BACKEND_AUTH_FILES}
     DESTINATION etc/web_config
 )
-## 第三步：安装资源文件进 etc/web/assets/
+
+# 项目npm 产物与网页静态资源 → etc/web/和 etc/web/assets/
+# 安装前整目录清空 etc/web，避免异产品资源残留；清空须在地图/页面/URDF 安装之前，否则刚装上的内容会被删掉。
+install(CODE [[
+    set(web_root "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc/web")
+    if(IS_SYMLINK "${web_root}")
+        file(REMOVE "${web_root}")
+    elseif(EXISTS "${web_root}")
+        file(REMOVE_RECURSE "${web_root}")
+    endif()
+]])
+## 第三步：安装地图等资源文件进 etc/web/assets/
 install(DIRECTORY ${BACKEND_ASSETS_MAPS_DIR}/
     DESTINATION etc/web/assets/maps
 )
-
-# 前端 npm 产物（按产品分目录）→ etc/web/（由 frontend_build 保证存在；robot_urdf 不经 npm，由下方 asserts 规则直装）
-## 第一步：删除 etc/web/static 目录，避免累积旧前端产物
-install(CODE [[
-    # static 目录由 Vite 构建独占生成（vite.config.js assetsDir），可整目录清理；
-    # 配置、地图、URDF 在别处，不受影响
-    set(web_static "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc/web/static")
-    if(IS_SYMLINK "${web_static}")
-        file(REMOVE "${web_static}")
-    else()
-        file(REMOVE_RECURSE "${web_static}")
-    endif()
-]])
-## 第二步：根据产品目录安装新的前端产物到 etc/web/， 除了 robot_urdf 目录
+## 第四步：根据产品目录安装新的前端产物到 etc/web/， 除了 robot_urdf 目录
 ## （开发态同步进 public/ 后被构建原样拷贝，具有产品不确定性），其余都安装
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/frontend/build/${AI_TARGET_PRODUCT}/
     DESTINATION etc/web
     PATTERN "robot_urdf" EXCLUDE
 )
-## 第三步：单独安装前端 robot_urdf等资源到 etc/web/
+## 第五步：单独安装前端 robot_urdf等资源到 etc/web/assets/
 set(ROBOT_FRONTEND_ASSERTS_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/frontend/asserts/${AI_TARGET_PRODUCT}")
 file(GLOB ROBOT_FRONTEND_ASSERTS_ITEMS
