@@ -15,6 +15,6 @@ export default function Sidebar({ selectedMenu, onMenuSelect }) {
     <nav className="sidebar-nav">{items.map(item => <button key={item.id} className={`menu-item ${selectedMenu === item.id ? 'active' : ''}`} onClick={() => onMenuSelect(item.id)}>
       <span className="menu-icon">{item.icon}</span><span className="menu-label">{item.label}</span>
     </button>)}</nav>
-    <div className="sidebar-footer"><div className="version-info">ROS2 Jazzy · Demo 1.0<br />RoboView · 机器人监控</div></div>
+    <div className="sidebar-footer"><div className="version-info">ROS2 Jazzy · Demo 2.0<br />RoboView · 机器人监控</div></div>
   </div>;
 }

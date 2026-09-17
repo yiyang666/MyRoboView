@@ -1,4 +1,4 @@
-# RoboView · Demo 1.0
+# RoboView · Demo 2.0
 
 面向 LRS-X 人形与 LRD-W 四足轮式机器人的 ROS2 监控与导航演示工程。
 项目从 RoboView/LYOS 界面演进，复用 React 页面，以独立 ROS2 节点和 Drogon C++ 服务承载数据。

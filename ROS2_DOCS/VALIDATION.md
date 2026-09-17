@@ -31,3 +31,23 @@
 - 覆盖单元测试结果、产物负例、产品/身份一致性、Vite 入口资源、真实 DDS + HTTP + WebSocket，并生成 JUnit、元数据和阶段日志。
 
 上述通过结论只证明当前测试声明的范围。实物审计另发现：旧 LRS-X 安装前缀仍有 CRA 和旧资源路径残留，而检查器只对 `static/` 做完整集合比较；干净 Git 检出也缺少 CMake 强制要求的私有认证 JSON。因此尚不能声明“旧版原地升级目录干净”或“当前 CI 可从零构建”。详见 [问题跟踪](OPTIMIZED.md) 与本轮代码评审。
+
+## Demo 2.0 发布（2026-09-17）
+
+**标签**：`demo v2.0` · **分支**：`develop`
+
+相对 Demo 1.0 的主要变更：
+
+- 前端构建框架 **CRA/react-scripts → Vite 6**（依赖约 1330→13 包，全量构建 <1s；代理/产品注入收敛到 `vite.config.js`）
+- 安装前 **整目录清空 `etc/web`** 再重生，消除 CRA 旧布局与异产品资源残留（BUG-05）
+- 认证 **auth_users.example.json** 入库，干净检出/CI 可构建（BUG-04）；登录未启用
+- 开发/生产 **URDF URL 统一**为 `/assets/robot_urdf/`（BUG-06）
+- `.gitignore` 分层：`roboview/.gitignore`（前后端包）+ 仓根 `.gitignore`
+
+发布前本机验证（x64 / Jazzy）：
+
+- `make lrd-w_x86_64` / `make lrs-x_x86_64`：colcon + Vite 构建安装通过
+- `./scripts/test.sh -p lrs-x` / `-p lrd-w`：单元、产物、DDS/HTTP/WebSocket 全通过
+- `./scripts/start_dev.sh -p lrd-w`：Vite dev + 后端联调正常
+
+未纳入本版范围：浏览器 E2E 自动化、Orin NX 部署、3D viewer、真实导航闭环。

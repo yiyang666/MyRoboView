@@ -12,4 +12,4 @@
 
 当前环境为 x64 Ubuntu 24.04 / ROS2 Jazzy；目标硬件 Orin NX。安装、部署文档推迟到部署阶段。
 
-2026-09-16 当前实现已迁移到 Vite 6，并形成按产品构建、统一安装与双产品集成验证链路。已验证范围见 [验证记录](VALIDATION.md)；尚未解决的干净检出构建和旧版增量安装残留问题，以 [OPTIMIZED](OPTIMIZED.md) 为准，不以本机测试通过替代发布验收。
+**Demo 2.0**（2026-09-17）：前端自 CRA 迁移至 **Vite 6**；按产品构建与统一安装链路成熟；Codex 评审 P1（认证示例、安装残留、URDF URL）已修复。已验证范围见 [验证记录](VALIDATION.md)；未关闭项见 [OPTIMIZED](OPTIMIZED.md)。

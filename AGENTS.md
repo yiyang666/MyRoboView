@@ -4,7 +4,7 @@
 - 当前优先 x64 Ubuntu 24.04 / ROS2 Jazzy；目标硬件 Orin NX，部署与安装文档后置。
 - robotapp 为独立 C++ / rclcpp 模拟程序；roboview/backend 为 Drogon C++ 后端，二者独立配置。
 - 自定义消息在 robot_msgs/node_app_msgs；标准消息参考快照在 robot_msgs/ros_msgs，实际链接系统 ROS 消息。
-- 前端在 roboview/frontend，React 组件 + Vite 构建（2026-09 自 CRA/react-scripts 迁移，约定见 roboview/README.md）。
+- 当前版本 **Demo 2.0**；前端在 roboview/frontend，React + Vite 6（2026-09 自 CRA 迁移，约定见 roboview/README.md）。
 - 配置分别在 robotapp/config 和 roboview/backend/config/<产品>/（按产品拆分，构建时只安装当前产品）。
 - 不引入 LYOS SDK、业务动作或标定；资源健康、日志本阶段不做。
 - 后端入口 main.cpp，订阅在 ros_subscriber.cpp，发布在 command_publisher.cpp；程序名 roboview。

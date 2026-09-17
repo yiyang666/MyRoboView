@@ -1,4 +1,4 @@
-# roboview — 前后端一体包与开发/生产构建体系
+# roboview — 前后端一体包与开发/生产构建体系（Demo 2.0）
 
 本目录是一个 colcon 包，**目录名、包名、二进制名统一为 `roboview`**，
 **包根就在本目录**（`CMakeLists.txt` + `package.xml`），
